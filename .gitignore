@@ -1,0 +1,5 @@
+data/*
+.vscode
+output/*
+module/__pycache__/
+test*
