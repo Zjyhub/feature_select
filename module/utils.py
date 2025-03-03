@@ -3,18 +3,20 @@ from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import accuracy_score
 
 
-
 # 返回sigmoid函数值
 def sigmoid(x):
-    return 1/(1+np.exp(-x))
+    return 1 / (1 + np.exp(-x))
+
 
 # 返回tanh函数值的绝对值
 def tanh(x):
     return np.abs(np.tanh(x))
 
+
 # 返回反转解
 def obl(x):
-    return 1-x
+    return 1 - x
+
 
 def fitness(alpha, beta, dimension, X, y, x, knn, k=5):
     """
@@ -30,11 +32,11 @@ def fitness(alpha, beta, dimension, X, y, x, knn, k=5):
     knn: KNN分类器对象
     k: kfold交叉验证的k值，默认值为10
     """
-    X = X.iloc[:,x==1]
+    X = X.iloc[:, x == 1]
 
     # 如果选择的特征数量为0，则返回正无穷
     if X.shape[1] == 0:
-        return float('inf')
+        return float("inf")
 
     # 随机选择数据集的70%作为训练集，30%作为测试集
     # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
@@ -50,20 +52,16 @@ def fitness(alpha, beta, dimension, X, y, x, knn, k=5):
         y_train_kf, y_test_kf = y.iloc[train_index], y.iloc[test_index]
         if len(X_train_kf) < 5:
             print(train_index)
-        knn.fit(X_train_kf, y_train_kf) # 训练
-        y_pred = knn.predict(X_test_kf) # 预测
-        err_rates.append(1 - accuracy_score(y_test_kf, y_pred)) # 计算错误率
-        
-    s = x.sum() # 计算当前已选择的特征数量
-    err_rate = np.mean(err_rates) # 计算平均错误率
-    f = alpha * err_rate + beta * s / dimension # 计算适应度函数值
+        knn.fit(X_train_kf, y_train_kf)  # 训练
+        y_pred = knn.predict(X_test_kf)  # 预测
+        err_rates.append(1 - accuracy_score(y_test_kf, y_pred))  # 计算错误率
+
+    s = x.sum()  # 计算当前已选择的特征数量
+    err_rate = np.mean(err_rates)  # 计算平均错误率
+    f = alpha * err_rate + beta * s / dimension  # 计算适应度函数值
     return f.astype(float)
+
 
 # 编写CEC2017的测试函数
 def cec2017_F1(x):
-    return np.sum(x**2) # 返回x的平方和
-
-
-
-
-
+    return np.sum(x**2)  # 返回x的平方和

@@ -2,8 +2,22 @@ from sklearn.neighbors import KNeighborsClassifier
 from scipy.stats import cauchy
 from module.utils import *
 
+
 class DE_JADE:
-    def __init__(self,X,y,iterations=100,size=20,alpha=0.99, beta=0.01,u_F=0.5,u_CR=0.5,c=0.2,p=0.05,max_FES=1000):
+    def __init__(
+        self,
+        X,
+        y,
+        iterations=100,
+        size=20,
+        alpha=0.99,
+        beta=0.01,
+        u_F=0.5,
+        u_CR=0.5,
+        c=0.2,
+        p=0.05,
+        max_FES=1000,
+    ):
         """
         初始化DE算法对象
 
@@ -31,94 +45,99 @@ class DE_JADE:
         self.max_FES = max_FES
         self.dimension = X.shape[1]
 
-        self.F=-1
-        self.CR=-1
-        self.P = np.zeros((self.size,self.dimension)).astype(int) # 种群
-        self.x = np.zeros((self.size,self.dimension)) 
-        self.pbest = np.zeros((self.size,self.dimension)) # 个体历史最优位置
-        self.pbest_fitness = np.zeros(self.size) # 个体历史最优适应度
-        self.A=np.zeros((0,self.dimension)) # 存储被淘汰的父代个体
-        self.S_F=np.zeros(0) # 存储成功替换父代的缩放因子
-        self.S_CR=np.zeros(0) # 存储成功替换父代的交叉概率
-        self.FES = 0 # 评估次数
-        self.global_best_fitness = float('inf') # 全局最优适应度
-        self.global_best = np.zeros(self.dimension).astype(int) # 全局最优解
+        self.F = -1
+        self.CR = -1
+        self.P = np.zeros((self.size, self.dimension)).astype(int)  # 种群
+        self.x = np.zeros((self.size, self.dimension))
+        self.pbest = np.zeros((self.size, self.dimension))  # 个体历史最优位置
+        self.pbest_fitness = np.zeros(self.size)  # 个体历史最优适应度
+        self.A = np.zeros((0, self.dimension))  # 存储被淘汰的父代个体
+        self.S_F = np.zeros(0)  # 存储成功替换父代的缩放因子
+        self.S_CR = np.zeros(0)  # 存储成功替换父代的交叉概率
+        self.FES = 0  # 评估次数
+        self.global_best_fitness = float("inf")  # 全局最优适应度
+        self.global_best = np.zeros(self.dimension).astype(int)  # 全局最优解
         self.f_best = []
         self.knn = KNeighborsClassifier(n_neighbors=5)
         pass
 
     # 计算Lehmer均值
-    def mean_lehmer(self,p=2):
-        numerator = np.sum(np.power(self.S_F,p))
-        denominator = np.sum(np.power(self.S_F,p-1))
+    def mean_lehmer(self, p=2):
+        numerator = np.sum(np.power(self.S_F, p))
+        denominator = np.sum(np.power(self.S_F, p - 1))
         # 防止分母为0
         if denominator == 0:
             return 0
-        return numerator/denominator
+        return numerator / denominator
 
     # 从前p%的个体中随机选择一个个体
     def get_random_from_top(self):
-        
-        k=int(self.size*self.p)
+        k = int(self.size * self.p)
         partitioned = np.partition(self.pbest_fitness, k)
         threshold = partitioned[k]
         indices = np.where(self.pbest_fitness <= threshold)[0]
-        return self.pbest[np.random.choice(indices,1)[0]]
+        return self.pbest[np.random.choice(indices, 1)[0]]
 
     # 变异策略
-    def F_current_to_pbest(self,i):
+    def F_current_to_pbest(self, i):
         # 在前p%的个体中随机选择一个个体
         pbest = self.get_random_from_top()
-        r1=np.random.choice(self.size,1)[0]
+        r1 = np.random.choice(self.size, 1)[0]
         for j in range(self.size):
             if r1 != i:
                 break
-            r1=np.random.choice(self.size,1)[0]
+            r1 = np.random.choice(self.size, 1)[0]
         x_r1 = self.x[r1]
 
-        A_x=np.concatenate((self.x,self.A))
-        x_r2 = A_x[np.random.choice(len(A_x),1)[0]]
+        A_x = np.concatenate((self.x, self.A))
+        x_r2 = A_x[np.random.choice(len(A_x), 1)[0]]
 
         # 生成新的个体
-        V=self.x[i]+self.F*(pbest-self.x[i])+self.F*(x_r1-x_r2)
+        V = self.x[i] + self.F * (pbest - self.x[i]) + self.F * (x_r1 - x_r2)
         # 检查是否越界
-        V=np.clip(V,0,1)
+        V = np.clip(V, 0, 1)
         return V
-
 
     # 初始化种群
     def init_solution(self):
-        self.P = np.zeros((self.size,self.dimension)).astype(int) # 种群
-        self.x = np.zeros((self.size,self.dimension)) 
-        self.pbest = np.zeros((self.size,self.dimension)) # 个体历史最优位置
-        self.A=np.zeros((0,self.dimension)) # 存储被淘汰的父代个体
-        self.S_F=np.zeros(0) # 存储成功的缩放因子
-        self.S_CR=np.zeros(0) # 存储成功的交叉概率
-        self.FES = 0 # 评估次数
-        self.global_best_fitness = float('inf') # 全局最优适应度
-        self.global_best = np.zeros(self.dimension).astype(int) # 全局最优解
+        self.P = np.zeros((self.size, self.dimension)).astype(int)  # 种群
+        self.x = np.zeros((self.size, self.dimension))
+        self.pbest = np.zeros((self.size, self.dimension))  # 个体历史最优位置
+        self.A = np.zeros((0, self.dimension))  # 存储被淘汰的父代个体
+        self.S_F = np.zeros(0)  # 存储成功的缩放因子
+        self.S_CR = np.zeros(0)  # 存储成功的交叉概率
+        self.FES = 0  # 评估次数
+        self.global_best_fitness = float("inf")  # 全局最优适应度
+        self.global_best = np.zeros(self.dimension).astype(int)  # 全局最优解
         self.f_best = []
         for i in range(self.size):
             # 将x[i]初始化为0-1之间的随机数
             self.x[i] = np.random.rand(self.dimension)
             # 根据x[i]每个特征的值是否大于0.5来初始化种群
             self.P[i] = (self.x[i] > 0.5).astype(int)
-            f_new = fitness(self.alpha,self.beta,self.dimension,self.X,self.y,self.P[i],self.knn)
+            f_new = fitness(
+                self.alpha,
+                self.beta,
+                self.dimension,
+                self.X,
+                self.y,
+                self.P[i],
+                self.knn,
+            )
 
             # 更新个体历史最优位置和全局最优位置
-            self.pbest[i] = self.x[i]   
+            self.pbest[i] = self.x[i]
             self.pbest_fitness[i] = f_new
             if f_new < self.global_best_fitness:
                 self.global_best = self.P[i]
                 self.global_best_fitness = f_new
         # 初始化缩放因子F和交叉概率CR
-        self.F=cauchy.rvs(loc=0.5, scale=0.1, size=1)[0] # 从柯西分布中生成F
-        self.CR=np.random.normal(self.u_CR,0.1,1)[0]    # 从正态分布中生成CR
+        self.F = cauchy.rvs(loc=0.5, scale=0.1, size=1)[0]  # 从柯西分布中生成F
+        self.CR = np.random.normal(self.u_CR, 0.1, 1)[0]  # 从正态分布中生成CR
         # 将CR限制在[0,1]之间
-        self.F = np.clip(self.F,0,1)
-        self.CR = np.clip(self.CR,0,1)
-        
-    
+        self.F = np.clip(self.F, 0, 1)
+        self.CR = np.clip(self.CR, 0, 1)
+
     # 更新种群
     def update(self):
         for t in range(self.iterations):
@@ -129,25 +148,43 @@ class DE_JADE:
                 V = self.F_current_to_pbest(i)
 
                 # 交叉操作，根据交叉概率CR生成新的个体U
-                U=self.x[i].copy()
-                j_rand = np.random.randint(0,self.dimension) 
+                U = self.x[i].copy()
+                j_rand = np.random.randint(0, self.dimension)
                 for j in range(self.dimension):
                     if np.random.rand() < self.CR or j == j_rand:
                         U[j] = V[j]
                 population_U = (U > 0.5).astype(int)
 
                 # 选择操作，选择适应度函数值更小的个体
-                f_u = fitness(self.alpha,self.beta,self.dimension,self.X,self.y,population_U,self.knn)
-                f_x = fitness(self.alpha,self.beta,self.dimension,self.X,self.y,self.P[i],self.knn)
+                f_u = fitness(
+                    self.alpha,
+                    self.beta,
+                    self.dimension,
+                    self.X,
+                    self.y,
+                    population_U,
+                    self.knn,
+                )
+                f_x = fitness(
+                    self.alpha,
+                    self.beta,
+                    self.dimension,
+                    self.X,
+                    self.y,
+                    self.P[i],
+                    self.knn,
+                )
                 if f_u < f_x:
                     self.P[i] = population_U
                     self.x[i] = U
-                    self.S_F = np.append(self.S_F,self.F)
-                    self.S_CR = np.append(self.S_CR,self.CR)
+                    self.S_F = np.append(self.S_F, self.F)
+                    self.S_CR = np.append(self.S_CR, self.CR)
 
-                    self.A = np.append(self.A,[self.x[i]],axis=0)
+                    self.A = np.append(self.A, [self.x[i]], axis=0)
                     if len(self.A) > self.size:
-                        self.A = np.delete(self.A,np.random.randint(0,len(self.A),1),axis=0)
+                        self.A = np.delete(
+                            self.A, np.random.randint(0, len(self.A), 1), axis=0
+                        )
                     if f_u < self.pbest_fitness[i]:
                         self.pbest[i] = self.x[i]
                         self.pbest_fitness[i] = f_u
@@ -160,11 +197,15 @@ class DE_JADE:
                     self.f_best.append(self.global_best_fitness)
                     return
             # 更新缩放因子F和交叉概率CR
-            if len(self.S_CR)>0:
-                self.u_CR=(1-self.c)*self.u_CR+self.c*np.mean(self.S_CR) # 如果c不为0，则利用成功替换父代的CR的均值来更新u_CR
+            if len(self.S_CR) > 0:
+                self.u_CR = (1 - self.c) * self.u_CR + self.c * np.mean(
+                    self.S_CR
+                )  # 如果c不为0，则利用成功替换父代的CR的均值来更新u_CR
             else:
-                self.u_CR=(1-self.c)*self.u_CR+self.c*self.CR
-            self.u_F=(1-self.c)*self.u_F+self.c*self.mean_lehmer()  # 如果c不为0，则利用成功替换父代的F的lehmer均值来更新u_F
+                self.u_CR = (1 - self.c) * self.u_CR + self.c * self.CR
+            self.u_F = (
+                1 - self.c
+            ) * self.u_F + self.c * self.mean_lehmer()  # 如果c不为0，则利用成功替换父代的F的lehmer均值来更新u_F
             self.f_best.append(self.global_best_fitness)
 
     def fit(self):

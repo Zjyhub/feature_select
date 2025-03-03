@@ -1,8 +1,20 @@
 from sklearn.neighbors import KNeighborsClassifier
 from module.utils import *
 
+
 class DE:
-    def __init__(self,X,y,iterations=100,size=20,alpha=0.99, beta=0.01,F=0.5,CR=0.5,max_FES=1000):
+    def __init__(
+        self,
+        X,
+        y,
+        iterations=100,
+        size=20,
+        alpha=0.99,
+        beta=0.01,
+        F=0.5,
+        CR=0.5,
+        max_FES=1000,
+    ):
         """
         初始化DE算法对象
 
@@ -26,10 +38,10 @@ class DE:
         self.max_FES = max_FES
 
         self.dimension = X.shape[1]
-        self.population = np.zeros((self.size,self.dimension)).astype(int)
-        self.x = np.zeros((self.size,self.dimension))
+        self.population = np.zeros((self.size, self.dimension)).astype(int)
+        self.x = np.zeros((self.size, self.dimension))
         self.FES = 0
-        self.global_best_fitness = float('inf')
+        self.global_best_fitness = float("inf")
         self.global_best = np.zeros(self.dimension).astype(int)
         self.f_best = []
         self.knn = KNeighborsClassifier(n_neighbors=5)
@@ -37,20 +49,19 @@ class DE:
 
     def F_rand(self):
         # 选择三个不同的个体的索引
-        a,b,c = np.random.choice(self.size,3,replace=False)
+        a, b, c = np.random.choice(self.size, 3, replace=False)
         # 生成新的个体
-        V=self.x[a]+self.F*(self.x[b]-self.x[c])
+        V = self.x[a] + self.F * (self.x[b] - self.x[c])
         # 检查是否越界
-        V=np.clip(V,0,1)
+        V = np.clip(V, 0, 1)
         return V
-
 
     # 初始化种群
     def init_solution(self):
-        self.population = np.zeros((self.size,self.dimension)).astype(int)
-        self.x = np.zeros((self.size,self.dimension))
+        self.population = np.zeros((self.size, self.dimension)).astype(int)
+        self.x = np.zeros((self.size, self.dimension))
         self.FES = 0
-        self.global_best_fitness = float('inf')
+        self.global_best_fitness = float("inf")
         self.global_best = np.zeros(self.dimension).astype(int)
         self.f_best = []
         for i in range(self.size):
@@ -58,11 +69,19 @@ class DE:
             self.x[i] = np.random.rand(self.dimension)
             # 根据x[i]每个特征的值是否大于0.5来初始化种群
             self.population[i] = (self.x[i] > 0.5).astype(int)
-            f_new = fitness(self.alpha,self.beta,self.dimension,self.X,self.y,self.population[i],self.knn)
+            f_new = fitness(
+                self.alpha,
+                self.beta,
+                self.dimension,
+                self.X,
+                self.y,
+                self.population[i],
+                self.knn,
+            )
             if f_new < self.global_best_fitness:
                 self.global_best = self.population[i]
                 self.global_best_fitness = f_new
-    
+
     # 更新种群
     def update(self):
         for t in range(self.iterations):
@@ -73,15 +92,31 @@ class DE:
                 V = self.F_rand()
 
                 # 交叉操作，根据交叉概率CR生成新的个体U
-                U=self.x[i].copy()
+                U = self.x[i].copy()
                 for j in range(self.dimension):
                     if np.random.rand() < self.CR:
                         U[j] = V[j]
                 population_U = (U > 0.5).astype(int)
 
                 # 选择操作，选择适应度函数值更小的个体
-                f_u = fitness(self.alpha,self.beta,self.dimension,self.X,self.y,population_U,self.knn)
-                f_x = fitness(self.alpha,self.beta,self.dimension,self.X,self.y,self.population[i],self.knn)
+                f_u = fitness(
+                    self.alpha,
+                    self.beta,
+                    self.dimension,
+                    self.X,
+                    self.y,
+                    population_U,
+                    self.knn,
+                )
+                f_x = fitness(
+                    self.alpha,
+                    self.beta,
+                    self.dimension,
+                    self.X,
+                    self.y,
+                    self.population[i],
+                    self.knn,
+                )
                 if f_u < f_x:
                     self.population[i] = population_U
                     self.x[i] = U
