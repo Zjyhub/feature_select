@@ -4,6 +4,8 @@ from module.BPSO_Obl import *
 from module.DE import *
 from module.DE_JADE import *
 from module.DE_SHADE import *
+from module.DE_LSHADE import *
+from module.DE_RL_LSHADE import *
 from matplotlib import pyplot as plt
 
 
@@ -99,6 +101,38 @@ class FeatureSelect:
         plt.legend()
         plt.title(name)
         plt.savefig("./output/DE_SHADE.png")
+        plt.show()
+
+    def fit_DE_LSHADE(self, name):
+        de_lshade = DE_LSHADE(self.X, self.y)
+        de_lshade.fit()
+
+        print(
+            f"\nDE_LSHADE 最优解: {de_lshade.global_best}, 适应度函数值: {de_lshade.global_best_fitness:.6f}"
+        )
+
+        plt.plot(de_lshade.f_best, label="DE_LSHADE")
+        plt.xlabel("iteration")
+        plt.ylabel("fitness")
+        plt.legend()
+        plt.title(name)
+        plt.savefig("./output/DE_LSHADE.png")
+        plt.show()
+
+    def fit_DE_RL_LSHADE(self, name):
+        de_rl_lshade = DE_RL_LSHADE(self.X, self.y)
+        de_rl_lshade.fit()
+
+        print(
+            f"\nDE_RL_LSHADE 最优解: {de_rl_lshade.global_best}, 适应度函数值: {de_rl_lshade.global_best_fitness:.6f}"
+        )
+
+        plt.plot(de_rl_lshade.f_best, label="DE_RL_LSHADE")
+        plt.xlabel("iteration")
+        plt.ylabel("fitness")
+        plt.legend()
+        plt.title(name)
+        plt.savefig("./output/DE_RL_LSHADE.png")
         plt.show()
 
     def compare(self):

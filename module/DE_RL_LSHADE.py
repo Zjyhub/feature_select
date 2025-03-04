@@ -19,6 +19,8 @@ class DE_RL_LSHADE:
         H=5,
         r_arc=2.0,
         mcr_terminal=0.6,
+        gamma=0.9,
+        alpha_lr=0.1,
         max_FES=1000,
     ):
         """
@@ -37,6 +39,8 @@ class DE_RL_LSHADE:
         H: 控制参数，表示记录的M_F和M_CR的长度，默认值为5
         r_arc: 控制参数，控制被淘汰的父代个体的数量为r_arc*size，默认值为2
         cr_terminal: 控制参数，当M_CR小于mcr_terminal时停止，默认值为0.6
+        gamma: 控制参数，用来更新Q表的参数，默认值为0.9
+        alpha_lr: 控制参数，用来更新Q表的参数，默认值为0.1
         max_FES: 最大评估次数，默认值为1000
         """
         self.X = X
@@ -52,7 +56,8 @@ class DE_RL_LSHADE:
         self.H = H
         self.r_arc = r_arc
         self.mcr_terminal = mcr_terminal
-
+        self.gamma = gamma
+        self.alpha_lr = alpha_lr
         self.max_FES = max_FES
         self.dimension = X.shape[1]
 
@@ -71,8 +76,9 @@ class DE_RL_LSHADE:
         self.FES = 0  # 评估次数
         self.global_best_fitness = float("inf")  # 全局最优适应度
         self.global_best = np.zeros(self.dimension).astype(int)  # 全局最优解
-        self.f_best = []
-        self.Q_table = np.zeros((2, 6))
+        self.f_best = []  # 存储全局最优适应度值
+        self.State = np.zeros(self.size)  # 记录每个个体的状态，0表示当前个体优于之前的父代，1表示当前个体劣于之前的父代
+        self.Q_table = np.zeros((2, 7))  # Q表, 2个状态，7个动作
         self.knn = KNeighborsClassifier(n_neighbors=5)
         pass
 
@@ -130,6 +136,88 @@ class DE_RL_LSHADE:
         V = np.clip(V, 0, 1)
         return V
 
+    # DE/best/1
+    def F_best_1(self, i):
+        # 选择两个不同的个体和全局最优个体
+        # 根据适应度函数值获得全局最优个体的索引
+        best = np.argmin(self.pbest_fitness)
+        x_set = set()
+        x_set.add(i)
+        x_set.add(best)
+        r = np.zeros(2)
+        for j in range(2):
+            r[j] = np.random.choice(self.size, 1)[0]
+            while r[j] in x_set:
+                r[j] = np.random.choice(self.size, 1)[0]
+            x_set.add(r[j])
+
+        V = self.x[best] + self.F * (self.x[r[0]] - self.x[r[1]])
+        V = np.clip(V, 0, 1)
+        return V
+
+    # DE/best/2
+    def F_best_2(self, i):
+        # 选择四个不同的个体和全局最优个体
+        best = np.argmin(self.pbest_fitness)
+        x_set = set()
+        x_set.add(i)
+        x_set.add(best)
+        r = np.zeros(4)
+        for j in range(4):
+            r[j] = np.random.choice(self.size, 1)[0]
+            while r[j] in x_set:
+                r[j] = np.random.choice(self.size, 1)[0]
+            x_set.add(r[j])
+
+        V = (
+            self.x[best]
+            + self.F * (self.x[r[0]] - self.x[r[1]])
+            + self.F * (self.x[r[2]] - self.x[r[3]])
+        )
+        V = np.clip(V, 0, 1)
+        return V
+
+    # DE/current-to-rand/1
+    def F_current_to_rand_1(self, i):
+        # 选择三个不同的个体
+        x_set = set()
+        x_set.add(i)
+        r = np.zeros(3)
+        for j in range(3):
+            r[j] = np.random.choice(self.size, 1)[0]
+            while r[j] in x_set:
+                r[j] = np.random.choice(self.size, 1)[0]
+            x_set.add(r[j])
+
+        V = (
+            self.x[i]
+            + self.F * (self.r[0] - self.x[i])
+            + self.F * (self.x[r[1]] - self.x[r[2]])
+        )
+        V = np.clip(V, 0, 1)
+        return V
+
+    # DE/current-to-best/1
+    def F_current_to_best_1(self, i):
+        # 选择两个不同的个体
+        x_set = set()
+        x_set.add(i)
+        r = np.zeros(2)
+        for j in range(2):
+            r[j] = np.random.choice(self.size, 1)[0]
+            while r[j] in x_set:
+                r[j] = np.random.choice(self.size, 1)[0]
+            x_set.add(r[j])
+
+        V = (
+            self.x[i]
+            + self.F * (self.x[i] - self.pbest[i])
+            + self.F * (self.x[r[0]] - self.x[r[1]])
+        )
+        V = np.clip(V, 0, 1)
+        return V
+
+    # DE/current-to-pbest/1
     def F_current_to_pbest(self, i):
         # 在前p%的个体中随机选择一个个体
         pbest = self.get_random_from_top()
@@ -148,6 +236,32 @@ class DE_RL_LSHADE:
         # 检查是否越界
         V = np.clip(V, 0, 1)
         return V
+
+    # 策略选择
+    def strategy(self, i):
+        choice_prob = np.zeros(7)
+        q_sum = np.sum(np.exp(self.Q_table[self.State[i]]))
+        for j in range(7):
+            choice_prob[j] = np.exp(self.Q_table[self.State[i], j]) / q_sum
+        # 判断求和是否为1
+        if np.sum(choice_prob) != 1:
+            choice_prob[0] += 1 - np.sum(choice_prob)
+        choice = np.random.choice(7, 1, p=choice_prob)[0]
+        return choice
+
+    # 更新Q表
+    def update_Q_table(self, i, choice, isbetter):
+        if isbetter:
+            reward = 1
+        else:
+            reward = 0
+        self.Q_table[self.State[i], choice] = self.Q_table[
+            self.State[i], choice
+        ] + self.alpha_lr * (
+            reward
+            + self.gamma * np.max(self.Q_table[1 - self.State[i]])
+            - self.Q_table[self.State[i], choice]
+        )
 
     def reduce_population(self):
         # 根据适应度函数值对种群进行排序
@@ -215,7 +329,7 @@ class DE_RL_LSHADE:
                     f"当前最优解x: {self.global_best}, fitness: {self.global_best_fitness:.6f}"
                 )
             for i in range(self.size):
-                # 在[0,H)之间随机选择一个整数]
+                # 在[0,H)之间随机选择一个整数
                 r_i = np.random.choice(self.H, 1)[0]
 
                 # 初始化缩放因子F和交叉概率CR
@@ -230,8 +344,23 @@ class DE_RL_LSHADE:
                 self.F = np.clip(self.F, 0, 1)
                 self.CR = np.clip(self.CR, 0, 1)
 
+                # 策略选择
+                choice = self.strategy(self.State[i])
                 # 变异操作，根据变异策略生成新的个体V
-                V = self.F_current_to_pbest(i)
+                if choice == 0:
+                    V = self.F_rand_1(i)
+                elif choice == 1:
+                    V = self.F_rand_2(i)
+                elif choice == 2:
+                    V = self.F_best_1(i)
+                elif choice == 3:
+                    V = self.F_best_2(i)
+                elif choice == 4:
+                    V = self.F_current_to_rand_1(i)
+                elif choice == 5:
+                    V = self.F_current_to_best_1(i)
+                elif choice == 6:
+                    V = self.F_current_to_pbest(i)
 
                 # 交叉操作，根据交叉概率CR生成新的个体U
                 U = self.x[i].copy()
@@ -277,6 +406,14 @@ class DE_RL_LSHADE:
                     if f_u < self.global_best_fitness:
                         self.global_best = population_U
                         self.global_best_fitness = f_u
+
+                    # 更新Q表
+                    self.update_Q_table(i, choice, True)
+                    self.State[i] = 0
+                else:
+                    # 更新Q表
+                    self.update_Q_table(i, choice, False)
+                    self.State[i] = 1
 
                 self.FES += 1
                 if self.FES >= self.max_FES:

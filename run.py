@@ -1,6 +1,15 @@
 import pandas as pd
 from module.FeatureSelect import *
 
+# 数据集列表,格式为(路径, y_index, 名称)
+dataset_list = [
+    ("./data/wine/wine.data", 0, "wine"),
+    ("./data/ionosphere/ionosphere.data", 0, "ionosphere"),
+    ("./data/lymphography/lymphography.data", 0, "lymphography"),
+    ("./data/zoo/zoo.data", 17, "zoo"),
+    ("./data/spambase/spambase.data", 57, "spambase"),
+]
+
 
 # 根据传入路径读取数据，返回特征矩阵X和目标类别标签y
 def read_uci_data(path, y_index=0):
@@ -25,9 +34,11 @@ def read_uci_data(path, y_index=0):
 if __name__ == "__main__":
     X, y = read_uci_data("./data/wine/wine.data")
     f = FeatureSelect(X, y)
-    # f.compare()  # 比较四种算法
-    f.fit_DE_SHADE("wine")  # 运行DE_SHADE算法
-    # f.fit_DE_JADE('wine') # 运行DE_JADE算法
-    # f.fit_DE('wine') # 运行DE算法
     # f.fit_BPSO('wine') # 运行BPSO算法
     # f.fit_BPSO_Obl('wine') # 运行BPSO_Obl算法
+    # f.fit_DE('wine') # 运行DE算法
+    # f.fit_DE_JADE('wine') # 运行DE_JADE算法
+    # f.fit_DE_SHADE("wine")  # 运行DE_SHADE算法
+    # f.fit_DE_LSHADE("wine")  # 运行DE_LSHADE算法
+    # f.fit_DE_RL_LSHADE("wine")  # 运行DE_RL_LSHADE算法
+    # f.compare()  # 比较四种算法的性能
