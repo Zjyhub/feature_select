@@ -77,7 +77,7 @@ class DE_RL_LSHADE:
         self.global_best_fitness = float("inf")  # 全局最优适应度
         self.global_best = np.zeros(self.dimension).astype(int)  # 全局最优解
         self.f_best = []  # 存储全局最优适应度值
-        self.State = np.zeros(self.size)  # 记录每个个体的状态，0表示当前个体优于之前的父代，1表示当前个体劣于之前的父代
+        self.State = np.zeros(self.size).astype(int)  # 记录每个个体的状态，0表示当前个体优于之前的父代，1表示当前个体劣于之前的父代
         self.Q_table = np.zeros((2, 7))  # Q表, 2个状态，7个动作
         self.knn = KNeighborsClassifier(n_neighbors=5)
         pass
@@ -105,7 +105,7 @@ class DE_RL_LSHADE:
         # 从种群中随机选择三个不同的个体
         x_set = set()
         x_set.add(i)
-        r = np.zeros(3)
+        r = np.zeros(3).astype(int)
         for j in range(3):
             r[j] = np.random.choice(self.size, 1)[0]
             while r[j] in x_set:
@@ -121,7 +121,7 @@ class DE_RL_LSHADE:
         # 从种群中随机选择五个不同
         x_set = set()
         x_set.add(i)
-        r = np.zeros(5)
+        r = np.zeros(5).astype(int)
         for j in range(5):
             r[j] = np.random.choice(self.size, 1)[0]
             while r[j] in x_set:
@@ -144,7 +144,7 @@ class DE_RL_LSHADE:
         x_set = set()
         x_set.add(i)
         x_set.add(best)
-        r = np.zeros(2)
+        r = np.zeros(2).astype(int)
         for j in range(2):
             r[j] = np.random.choice(self.size, 1)[0]
             while r[j] in x_set:
@@ -162,7 +162,7 @@ class DE_RL_LSHADE:
         x_set = set()
         x_set.add(i)
         x_set.add(best)
-        r = np.zeros(4)
+        r = np.zeros(4).astype(int)
         for j in range(4):
             r[j] = np.random.choice(self.size, 1)[0]
             while r[j] in x_set:
@@ -182,7 +182,7 @@ class DE_RL_LSHADE:
         # 选择三个不同的个体
         x_set = set()
         x_set.add(i)
-        r = np.zeros(3)
+        r = np.zeros(3).astype(int)
         for j in range(3):
             r[j] = np.random.choice(self.size, 1)[0]
             while r[j] in x_set:
@@ -191,7 +191,7 @@ class DE_RL_LSHADE:
 
         V = (
             self.x[i]
-            + self.F * (self.r[0] - self.x[i])
+            + self.F * (self.x[i] - self.x[r[0]])
             + self.F * (self.x[r[1]] - self.x[r[2]])
         )
         V = np.clip(V, 0, 1)
@@ -200,9 +200,10 @@ class DE_RL_LSHADE:
     # DE/current-to-best/1
     def F_current_to_best_1(self, i):
         # 选择两个不同的个体
+        best = np.argmin(self.pbest_fitness)
         x_set = set()
         x_set.add(i)
-        r = np.zeros(2)
+        r = np.zeros(2).astype(int)
         for j in range(2):
             r[j] = np.random.choice(self.size, 1)[0]
             while r[j] in x_set:
@@ -211,7 +212,7 @@ class DE_RL_LSHADE:
 
         V = (
             self.x[i]
-            + self.F * (self.x[i] - self.pbest[i])
+            + self.F * (self.x[i] - self.x[best])
             + self.F * (self.x[r[0]] - self.x[r[1]])
         )
         V = np.clip(V, 0, 1)
@@ -238,7 +239,7 @@ class DE_RL_LSHADE:
         return V
 
     # 策略选择
-    def strategy(self, i):
+    def strategy_choice(self, i):
         choice_prob = np.zeros(7)
         q_sum = np.sum(np.exp(self.Q_table[self.State[i]]))
         for j in range(7):
@@ -345,7 +346,7 @@ class DE_RL_LSHADE:
                 self.CR = np.clip(self.CR, 0, 1)
 
                 # 策略选择
-                choice = self.strategy(self.State[i])
+                choice = self.strategy_choice(self.State[i])
                 # 变异操作，根据变异策略生成新的个体V
                 if choice == 0:
                     V = self.F_rand_1(i)

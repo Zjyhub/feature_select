@@ -49,9 +49,9 @@ if __name__ == "__main__":
     f = FeatureSelect(X, y)
     # f.fit_BPSO('wine') # 运行BPSO算法
     # f.fit_BPSO_Obl('wine') # 运行BPSO_Obl算法
-    f.fit_DE("wine")  # 运行DE算法
-    f.fit_DE_JADE("wine")  # 运行DE_JADE算法
-    f.fit_DE_SHADE("wine")  # 运行DE_SHADE算法
-    f.fit_DE_LSHADE("wine")  # 运行DE_LSHADE算法
+    # f.fit_DE("wine")  # 运行DE算法
+    # f.fit_DE_JADE("wine")  # 运行DE_JADE算法
+    # f.fit_DE_SHADE("wine")  # 运行DE_SHADE算法
+    # f.fit_DE_LSHADE("wine")  # 运行DE_LSHADE算法
     f.fit_DE_RL_LSHADE("wine")  # 运行DE_RL_LSHADE算法
-    f.compare()  # 比较四种算法的性能
+    # f.compare()  # 比较四种算法的性能

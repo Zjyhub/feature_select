@@ -27,7 +27,7 @@ class FeatureSelect:
         bpso = BPSO(self.X, self.y)  # 初始化BPSO对象
         bpso.fit()  # 运行BPSO算法
 
-        print(f"\nBPSO 最优解: {bpso.global_best}, 适应度函数值: {bpso.global_best_fitness:.6f}")
+        print(f"\nBPSO 最优解: {bpso.global_best}, 适应度函数值: {bpso.global_best_fitness:.6f}\n")
 
         # 画图,横坐标为迭代次数，纵坐标为适应度函数值
         plt.plot(bpso.f_best, label="BPSO")
@@ -43,7 +43,7 @@ class FeatureSelect:
         bpso_obl.fit()  # 运行BPSO_Obl算法
 
         print(
-            f"\nBPSO_Obl 最优解: {bpso_obl.global_best}, 适应度函数值: {bpso_obl.global_best_fitness:.6f}"
+            f"\nBPSO_Obl 最优解: {bpso_obl.global_best}, 适应度函数值: {bpso_obl.global_best_fitness:.6f}\n"
         )
 
         # 画图,横坐标为迭代次数，纵坐标为适应度函数值
@@ -60,7 +60,7 @@ class FeatureSelect:
         de_model.fit()  # 运行DE算法
 
         print(
-            f"\nDE 最优解: {de_model.global_best}, 适应度函数值: {de_model.global_best_fitness:.6f}"
+            f"\nDE 最优解: {de_model.global_best}, 适应度函数值: {de_model.global_best_fitness:.6f}\n"
         )
 
         plt.plot(de_model.f_best, label="DE")
@@ -76,7 +76,7 @@ class FeatureSelect:
         de_jade.fit()  # 运行DE_JADE算法
 
         print(
-            f"\nDE_JADE 最优解: {de_jade.global_best}, 适应度函数值: {de_jade.global_best_fitness:.6f}"
+            f"\nDE_JADE 最优解: {de_jade.global_best}, 适应度函数值: {de_jade.global_best_fitness:.6f}\n"
         )
 
         plt.plot(de_jade.f_best, label="DE_JADE")
@@ -92,7 +92,7 @@ class FeatureSelect:
         de_shade.fit()
 
         print(
-            f"\nDE_SHADE 最优解: {de_shade.global_best}, 适应度函数值: {de_shade.global_best_fitness:.6f}"
+            f"\nDE_SHADE 最优解: {de_shade.global_best}, 适应度函数值: {de_shade.global_best_fitness:.6f}\n"
         )
 
         plt.plot(de_shade.f_best, label="DE_SHADE")
@@ -108,7 +108,7 @@ class FeatureSelect:
         de_lshade.fit()
 
         print(
-            f"\nDE_LSHADE 最优解: {de_lshade.global_best}, 适应度函数值: {de_lshade.global_best_fitness:.6f}"
+            f"\nDE_LSHADE 最优解: {de_lshade.global_best}, 适应度函数值: {de_lshade.global_best_fitness:.6f}\n"
         )
 
         plt.plot(de_lshade.f_best, label="DE_LSHADE")
@@ -124,7 +124,7 @@ class FeatureSelect:
         de_rl_lshade.fit()
 
         print(
-            f"\nDE_RL_LSHADE 最优解: {de_rl_lshade.global_best}, 适应度函数值: {de_rl_lshade.global_best_fitness:.6f}"
+            f"\nDE_RL_LSHADE 最优解: {de_rl_lshade.global_best}, 适应度函数值: {de_rl_lshade.global_best_fitness:.6f}\n"
         )
 
         plt.plot(de_rl_lshade.f_best, label="DE_RL_LSHADE")
