@@ -141,8 +141,10 @@ class DE_JADE:
     # 更新种群
     def update(self):
         for t in range(self.iterations):
-            # if t % 10 == 0:
-            #     print(f"当前最优解x: {self.global_best}, fitness: {self.global_best_fitness:.6f}")
+            if t % 10 == 0:
+                print(
+                    f"当前最优解x: {self.global_best}, fitness: {self.global_best_fitness:.6f}"
+                )
             for i in range(self.size):
                 # 变异操作，根据变异策略生成新的个体V
                 V = self.F_current_to_pbest(i)

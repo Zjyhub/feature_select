@@ -60,7 +60,7 @@ class BPSO:
         self.p_best = np.zeros(
             (self.size, self.dimension)
         )  # 使用一个二维数组来存储粒子群中每个粒子的历史最佳位置
-        self.g_best = np.zeros(self.dimension)  # 使用一个一维数组来存储粒子群的全局最佳位置
+        self.global_best = np.zeros(self.dimension)  # 使用一个一维数组来存储粒子群的全局最佳位置
         self.v = np.zeros((self.size, self.dimension))  # 使用一个二维数组来存储粒子群的速度
         self.global_best_fitness = float("inf")  # 粒子群的全局最佳适应度初始化为正无穷
         self.p_best_fitness = np.zeros(self.size)  # 使用一个一维数组来存储粒子群中每个粒子的历史最佳适应度
@@ -73,7 +73,7 @@ class BPSO:
         self.p_best = np.zeros(
             (self.size, self.dimension)
         )  # 使用一个二维数组来存储粒子群中每个粒子的历史最佳位置
-        self.g_best = np.zeros(self.dimension)  # 使用一个一维数组来存储粒子群的全局最佳位置
+        self.global_best = np.zeros(self.dimension)  # 使用一个一维数组来存储粒子群的全局最佳位置
         self.v = np.zeros((self.size, self.dimension))  # 使用一个二维数组来存储粒子群的速度
         self.global_best_fitness = float("inf")  # 粒子群的全局最佳适应度初始化为正无穷
         self.p_best_fitness = np.zeros(self.size)  # 使用一个一维数组来存储粒子群中每个粒子的历史最佳适应度
@@ -95,7 +95,7 @@ class BPSO:
 
             # 更新全局最优位置
             if f_new < self.global_best_fitness:
-                self.g_best = self.p_best[i]
+                self.global_best = self.p_best[i]
                 self.global_best_fitness = f_new
 
     # 粒子群更新
@@ -105,8 +105,10 @@ class BPSO:
             self.w = self.w_max - (self.w_max - self.w_min) * t / self.iterations
 
             # 每迭代10次输出一次当前全局最优解
-            # if t % 10 == 0:
-            #     print(f"当前最优解x: {self.g_best}, fitness: {self.global_best_fitness:.6f}")
+            if t % 10 == 0:
+                print(
+                    f"当前最优解x: {self.global_best}, fitness: {self.global_best_fitness:.6f}"
+                )
 
             # 遍历每个粒子，更新每个粒子的位置和速度
             for i in range(self.size):
@@ -114,7 +116,7 @@ class BPSO:
                 self.v[i] = (
                     self.w * self.v[i]
                     + self.c1 * np.random.rand() * (self.p_best[i] - self.x[i])
-                    + self.c2 * np.random.rand() * (self.g_best - self.x[i])
+                    + self.c2 * np.random.rand() * (self.global_best - self.x[i])
                 )
                 self.v[i] = np.clip(self.v[i], -self.v_high, self.v_high)  # 限制速度范围
 
@@ -150,7 +152,7 @@ class BPSO:
 
                 # 更新全局最优位置
                 if f_new < self.global_best_fitness:
-                    self.g_best = self.p_best[i]
+                    self.global_best = self.p_best[i]
                     self.global_best_fitness = f_new
 
                 # 如果评估次数超过最大评估次数，则停止迭代
@@ -165,4 +167,4 @@ class BPSO:
     def fit(self):
         self.init_solution()  # 初始化粒子群
         self.update()  # 粒子群更新
-        return self.g_best
+        return self.global_best

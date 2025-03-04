@@ -32,13 +32,26 @@ def read_uci_data(path, y_index=0):
 
 
 if __name__ == "__main__":
+    # for dataset in dataset_list:
+    #     X, y = read_uci_data(dataset[0], dataset[1])
+    #     f = FeatureSelect(X, y)
+    #     print(f"当前正在对{dataset[2]}数据集进行特征选择:")
+    #     f.fit_BPSO(dataset[2])
+    #     f.fit_BPSO_Obl(dataset[2])
+    #     f.fit_DE(dataset[2])
+    #     f.fit_DE_JADE(dataset[2])
+    #     f.fit_DE_SHADE(dataset[2])
+    #     f.fit_DE_LSHADE(dataset[2])
+    #     f.fit_DE_RL_LSHADE(dataset[2])
+    #     f.compare()
+
     X, y = read_uci_data("./data/wine/wine.data")
     f = FeatureSelect(X, y)
     # f.fit_BPSO('wine') # 运行BPSO算法
     # f.fit_BPSO_Obl('wine') # 运行BPSO_Obl算法
-    # f.fit_DE('wine') # 运行DE算法
-    # f.fit_DE_JADE('wine') # 运行DE_JADE算法
-    # f.fit_DE_SHADE("wine")  # 运行DE_SHADE算法
-    # f.fit_DE_LSHADE("wine")  # 运行DE_LSHADE算法
-    # f.fit_DE_RL_LSHADE("wine")  # 运行DE_RL_LSHADE算法
-    # f.compare()  # 比较四种算法的性能
+    f.fit_DE("wine")  # 运行DE算法
+    f.fit_DE_JADE("wine")  # 运行DE_JADE算法
+    f.fit_DE_SHADE("wine")  # 运行DE_SHADE算法
+    f.fit_DE_LSHADE("wine")  # 运行DE_LSHADE算法
+    f.fit_DE_RL_LSHADE("wine")  # 运行DE_RL_LSHADE算法
+    f.compare()  # 比较四种算法的性能

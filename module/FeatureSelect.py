@@ -140,16 +140,25 @@ class FeatureSelect:
         bpso_obl = BPSO_Obl(self.X, self.y)  # 初始化BPSO_Obl对象
         de = DE(self.X, self.y)  # 初始化DE对象
         de_jade = DE_JADE(self.X, self.y)  # 初始化DE_JADE对象
+        de_shade = DE_SHADE(self.X, self.y)  # 初始化DE_SHADE对象
+        de_lshade = DE_LSHADE(self.X, self.y)  # 初始化DE_LSHADE对象
+        de_rl_lshade = DE_RL_LSHADE(self.X, self.y)  # 初始化DE_RL_LSHADE对象
 
         bpso_gbest = []
         bpso_obl_gbest = []
         de_gbest = []
         de_jade_gbest = []
+        de_shade_gbest = []
+        de_lshade_gbest = []
+        de_rl_lshade_gbest = []
 
         bpso_best_fitness = []
         bpso_obl_best_fitness = []
         de_best_fitness = []
         de_jade_best_fitness = []
+        de_shade_best_fitness = []
+        de_lshade_best_fitness = []
+        de_rl_lshade_best_fitness = []
 
         for i in range(self.M):
             print(f"\n第{i+1}次特征选择:")
@@ -165,6 +174,15 @@ class FeatureSelect:
             de_jade_gbest.append(de_jade.fit())
             de_jade_best_fitness.append(de_jade.global_best_fitness)
 
+            de_shade_gbest.append(de_shade.fit())
+            de_shade_best_fitness.append(de_shade.global_best_fitness)
+
+            de_lshade_gbest.append(de_lshade.fit())
+            de_lshade_best_fitness.append(de_lshade.global_best_fitness)
+
+            de_rl_lshade_gbest.append(de_rl_lshade.fit())
+            de_rl_lshade_best_fitness.append(de_rl_lshade.global_best_fitness)
+
             print(
                 f"BPSO 本次最优解: \t{bpso_gbest[-1]}, 适应度函数值: {bpso_best_fitness[-1]:.6f}"
             )
@@ -174,6 +192,15 @@ class FeatureSelect:
             print(f"DE 本次最优解: \t\t{de_gbest[-1]}, 适应度函数值: {de_best_fitness[-1]:.6f}")
             print(
                 f"DE_JADE 本次最优解: \t{de_jade_gbest[-1]}, 适应度函数值: {de_jade.global_best_fitness:.6f}"
+            )
+            print(
+                f"DE_SHADE 本次最优解: \t{de_shade_gbest[-1]}, 适应度函数值: {de_shade.global_best_fitness:.6f}"
+            )
+            print(
+                f"DE_LSHADE 本次最优解: \t{de_lshade_gbest[-1]}, 适应度函数值: {de_lshade.global_best_fitness:.6f}"
+            )
+            print(
+                f"DE_RL_LSHADE 本次最优解: \t{de_rl_lshade_gbest[-1]}, 适应度函数值: {de_rl_lshade.global_best_fitness:.6f}"
             )
 
         print(f"\n运行{self.M}次特征选择的结果:")
@@ -189,11 +216,24 @@ class FeatureSelect:
         print(
             f"DE_JADE 平均适应度函数值:\t{np.mean(de_jade_best_fitness):.6f} , 最优适应度函数值:{np.min(de_jade_best_fitness):.6f}, 最优解:{de_jade_gbest[np.argmin(de_jade_best_fitness)]}"
         )
+        print(
+            f"DE_SHADE 平均适应度函数值:\t{np.mean(de_shade_best_fitness):.6f} , 最优适应度函数值:{np.min(de_shade_best_fitness):.6f}, 最优解:{de_shade_gbest[np.argmin(de_shade_best_fitness)]}"
+        )
+        print(
+            f"DE_LSHADE 平均适应度函数值:\t{np.mean(de_lshade_best_fitness):.6f} , 最优适应度函数值:{np.min(de_lshade_best_fitness):.6f}, 最优解:{de_lshade_gbest[np.argmin(de_lshade_best_fitness)]}"
+        )
+        print(
+            f"DE_RL_LSHADE 平均适应度函数值:\t{np.mean(de_rl_lshade_best_fitness):.6f} , 最优适应度函数值:{np.min(de_rl_lshade_best_fitness):.6f}, 最优解:{de_rl_lshade_gbest[np.argmin(de_rl_lshade_best_fitness)]}"
+        )
 
         plt.plot(bpso_best_fitness, label="BPSO")
         plt.plot(bpso_obl_best_fitness, label="BPSO_Obl")
         plt.plot(de_best_fitness, label="DE")
         plt.plot(de_jade_best_fitness, label="DE_JADE")
+        plt.plot(de_shade_best_fitness, label="DE_SHADE")
+        plt.plot(de_lshade_best_fitness, label="DE_LSHADE")
+        plt.plot(de_rl_lshade_best_fitness, label="DE_RL_LSHADE")
+        plt.title("compare")
         plt.xlabel("M")
         plt.ylabel("fitness")
         plt.legend()
