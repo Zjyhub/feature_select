@@ -106,7 +106,7 @@ class BPSO_Obl:
 
             # 每迭代10次输出一次当前全局最优解
             if t % 10 == 0:
-                print(
+                print(   
                     f"当前最优解x: {self.global_best}, fitness: {self.global_best_fitness:.6f}"
                 )
 
