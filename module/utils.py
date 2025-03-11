@@ -1,10 +1,3 @@
-'''
-Description:  
-Author: Zjy
-Date: 2025-02-13 00:41:45
-LastEditTime: 2025-03-11 17:01:44
-version: 1.0
-'''
 import numpy as np
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import accuracy_score

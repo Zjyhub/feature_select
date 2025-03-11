@@ -1,10 +1,3 @@
-'''
-Description: 
-Author: Zjy
-Date: 2025-03-03 23:45:26
-LastEditTime: 2025-03-04 23:02:17
-version: 1.0
-'''
 import pandas as pd
 from module.FeatureSelect import *
 
