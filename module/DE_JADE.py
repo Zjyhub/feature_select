@@ -49,8 +49,7 @@ class DE_JADE:
         self.CR = -1
         self.P = np.zeros((self.size, self.dimension)).astype(int)  # 种群
         self.x = np.zeros((self.size, self.dimension))
-        self.pbest = np.zeros((self.size, self.dimension))  # 个体历史最优位置
-        self.pbest_fitness = np.zeros(self.size)  # 个体历史最优适应度
+        self.fitness_x = np.zeros(self.size)  # 个体历史最优适应度
         self.A = np.zeros((0, self.dimension))  # 存储被淘汰的父代个体
         self.S_F = np.zeros(0)  # 存储成功替换父代的缩放因子
         self.S_CR = np.zeros(0)  # 存储成功替换父代的交叉概率
@@ -73,10 +72,10 @@ class DE_JADE:
     # 从前p%的个体中随机选择一个个体
     def get_random_from_top(self):
         k = int(self.size * self.p)
-        partitioned = np.partition(self.pbest_fitness, k)
+        partitioned = np.partition(self.fitness_x, k)
         threshold = partitioned[k]
-        indices = np.where(self.pbest_fitness <= threshold)[0]
-        return self.pbest[np.random.choice(indices, 1)[0]]
+        indices = np.where(self.fitness_x <= threshold)[0]
+        return self.x[np.random.choice(indices, 1)[0]]
 
     # 变异策略
     def F_current_to_pbest(self, i):
@@ -102,7 +101,6 @@ class DE_JADE:
     def init_solution(self):
         self.P = np.zeros((self.size, self.dimension)).astype(int)  # 种群
         self.x = np.zeros((self.size, self.dimension))
-        self.pbest = np.zeros((self.size, self.dimension))  # 个体历史最优位置
         self.A = np.zeros((0, self.dimension))  # 存储被淘汰的父代个体
         self.S_F = np.zeros(0)  # 存储成功的缩放因子
         self.S_CR = np.zeros(0)  # 存储成功的交叉概率
@@ -126,8 +124,7 @@ class DE_JADE:
             )
 
             # 更新个体历史最优位置和全局最优位置
-            self.pbest[i] = self.x[i]
-            self.pbest_fitness[i] = f_new
+            self.fitness_x[i] = f_new
             if f_new < self.global_best_fitness:
                 self.global_best = self.P[i]
                 self.global_best_fitness = f_new
@@ -167,19 +164,12 @@ class DE_JADE:
                     population_U,
                     self.knn,
                 )
-                f_x = fitness(
-                    self.alpha,
-                    self.beta,
-                    self.dimension,
-                    self.X_train,
-                    self.y_train,
-                    self.P[i],
-                    self.knn,
-                )
-                if f_u < f_x:
+
+                if f_u < self.fitness_x[i]:
                     self.A = np.append(self.A, [self.x[i]], axis=0)
                     self.P[i] = population_U
                     self.x[i] = U
+                    self.fitness_x[i] = f_u
                     self.S_F = np.append(self.S_F, self.F)
                     self.S_CR = np.append(self.S_CR, self.CR)
                     
@@ -187,9 +177,7 @@ class DE_JADE:
                         self.A = np.delete(
                             self.A, np.random.randint(0, len(self.A), 1), axis=0
                         )
-                    if f_u < self.pbest_fitness[i]:
-                        self.pbest[i] = self.x[i]
-                        self.pbest_fitness[i] = f_u
+
                     if f_u < self.global_best_fitness:
                         self.global_best = population_U
                         self.global_best_fitness = f_u

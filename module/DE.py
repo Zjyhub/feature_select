@@ -39,6 +39,7 @@ class DE:
         self.dimension = X.shape[1]
         self.population = np.zeros((self.size, self.dimension)).astype(int)
         self.x = np.zeros((self.size, self.dimension))
+        self.fitness_x = np.zeros(self.size)
         self.FES = 0
         self.global_best_fitness = float("inf")
         self.global_best = np.zeros(self.dimension).astype(int)
@@ -77,6 +78,7 @@ class DE:
                 self.population[i],
                 self.knn,
             )
+            self.fitness_x[i] = f_new
             if f_new < self.global_best_fitness:
                 self.global_best = self.population[i]
                 self.global_best_fitness = f_new
@@ -109,18 +111,10 @@ class DE:
                     population_U,
                     self.knn,
                 )
-                f_x = fitness(
-                    self.alpha,
-                    self.beta,
-                    self.dimension,
-                    self.X_train,
-                    self.y_train,
-                    self.population[i],
-                    self.knn,
-                )
-                if f_u < f_x:
-                    self.population[i] = population_U
+                if f_u < self.fitness_x[i]:
                     self.x[i] = U
+                    self.fitness_x[i] = f_u
+                    self.population[i] = population_U
                     if f_u < self.global_best_fitness:
                         self.global_best = population_U
                         self.global_best_fitness = f_u

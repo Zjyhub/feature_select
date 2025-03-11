@@ -59,8 +59,7 @@ class DE_LSHADE:
         self.size = init_size
         self.P = np.zeros((self.size, self.dimension)).astype(int)  # 种群
         self.x = np.zeros((self.size, self.dimension))
-        self.pbest = np.zeros((self.size, self.dimension))  # 个体历史最优位置
-        self.pbest_fitness = np.zeros(self.size)  # 个体历史最优适应度
+        self.fitness_x = np.zeros(self.size)  # 个体历史最优适应度
         self.A = np.zeros((0, self.dimension))  # 存储被淘汰的父代个体
         self.S_F = np.zeros(0)  # 存储成功替换父代的缩放因子
         self.S_CR = np.zeros(0)  # 存储成功替换父代的交叉概率
@@ -85,10 +84,10 @@ class DE_LSHADE:
     # 从前p%的个体中随机选择一个个体
     def get_random_from_top(self):
         k = int(self.size * self.p)
-        partitioned = np.partition(self.pbest_fitness, k)
+        partitioned = np.partition(self.fitness_x, k)
         threshold = partitioned[k]  # 找到第k个最小值
-        indices = np.where(self.pbest_fitness <= threshold)[0]
-        return self.pbest[np.random.choice(indices, 1)[0]]
+        indices = np.where(self.fitness_x <= threshold)[0]
+        return self.x[np.random.choice(indices, 1)[0]]
 
     # 变异策略
     def F_current_to_pbest(self, i):
@@ -111,17 +110,16 @@ class DE_LSHADE:
         return V
 
     def reduce_population(self):
-        # 根据适应度函数值对种群进行排序
-        sorted_index = np.argsort(self.pbest_fitness)
+        # 根据适应度函数值对种群进行排序,默认从小到大排序
+        sorted_index = np.argsort(self.fitness_x)
         # 计算被淘汰的父代个体数量
         num_to_remove = int((self.min_size - self.size) * self.FES / self.max_FES)
         # 从种群中删除适应度函数值最大的个体
         if num_to_remove <= -1:
             self.P = np.delete(self.P, sorted_index[num_to_remove:], axis=0)
             self.x = np.delete(self.x, sorted_index[num_to_remove:], axis=0)
-            self.pbest = np.delete(self.pbest, sorted_index[num_to_remove:], axis=0)
-            self.pbest_fitness = np.delete(
-                self.pbest_fitness, sorted_index[num_to_remove:]
+            self.fitness_x = np.delete(
+                self.fitness_x, sorted_index[num_to_remove:]
             )
             self.size += num_to_remove
             len_A = int(self.size * self.r_arc)
@@ -136,7 +134,6 @@ class DE_LSHADE:
     def init_solution(self):
         self.P = np.zeros((self.size, self.dimension)).astype(int)  # 种群
         self.x = np.zeros((self.size, self.dimension))
-        self.pbest = np.zeros((self.size, self.dimension))  # 个体历史最优位置
         self.A = np.zeros((0, self.dimension))  # 存储被淘汰的父代个体
         self.S_F = np.zeros(0)  # 存储成功的缩放因子
         self.S_CR = np.zeros(0)  # 存储成功的交叉概率
@@ -162,8 +159,7 @@ class DE_LSHADE:
             )
 
             # 更新个体历史最优位置和全局最优位置
-            self.pbest[i] = self.x[i]
-            self.pbest_fitness[i] = f_new
+            self.fitness_x[i] = f_new
             if f_new < self.global_best_fitness:
                 self.global_best = self.P[i]
                 self.global_best_fitness = f_new
@@ -212,18 +208,11 @@ class DE_LSHADE:
                     population_U,
                     self.knn,
                 )
-                f_x = fitness(
-                    self.alpha,
-                    self.beta,
-                    self.dimension,
-                    self.X_train,
-                    self.y_train,
-                    self.P[i],
-                    self.knn,
-                )
-                if f_u < f_x:
+
+                if f_u < self.fitness_x[i]:
                     self.P[i] = population_U
                     self.x[i] = U
+                    self.fitness_x[i] = f_u
                     self.S_F = np.append(self.S_F, self.F)
                     self.S_CR = np.append(self.S_CR, self.CR)
 
@@ -232,9 +221,6 @@ class DE_LSHADE:
                         self.A = np.delete(
                             self.A, np.random.randint(0, len(self.A), 1), axis=0
                         )
-                    if f_u < self.pbest_fitness[i]:
-                        self.pbest[i] = self.x[i]
-                        self.pbest_fitness[i] = f_u
                     if f_u < self.global_best_fitness:
                         self.global_best = population_U
                         self.global_best_fitness = f_u
