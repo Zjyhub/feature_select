@@ -8,7 +8,6 @@ class DE_JADE:
         self,
         X,
         y,
-        iterations=100,
         size=20,
         alpha=0.99,
         beta=0.01,
@@ -24,7 +23,6 @@ class DE_JADE:
         参数:
         X: 特征矩阵，形状为 (样本数量, 特征数量)
         y: 目标类别标签，形状为 (样本数量,)
-        iterations: 迭代次数，默认值为100
         size: 种群大小，默认值为20
         u_F: 根据柯西分布生成缩放因子F的参数，默认值为0.5
         u_CR: 根据正态分布生成交叉概率CR的参数，默认值为0.5
@@ -32,7 +30,6 @@ class DE_JADE:
         p: 控制参数，用来选择前p%的个体，默认值为0.05
         max_FES: 最大评估次数，默认值为1000
         """
-        self.iterations = iterations
         self.size = size
         self.alpha = alpha
         self.beta = beta
@@ -45,9 +42,13 @@ class DE_JADE:
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)
         self.dimension = X.shape[1]
+        self.knn = KNeighborsClassifier(n_neighbors=5)
+    
+    # 初始化种群
+    def init_solution(self):
         self.F = -1
         self.CR = -1
-        self.P = np.zeros((self.size, self.dimension)).astype(int)  # 种群
+        self.P = np.zeros((self.size, self.dimension),dtype=int)  # 种群
         self.x = np.zeros((self.size, self.dimension))
         self.fitness_x = np.zeros(self.size)  # 个体历史最优适应度
         self.A = np.zeros((0, self.dimension))  # 存储被淘汰的父代个体
@@ -55,10 +56,35 @@ class DE_JADE:
         self.S_CR = np.zeros(0)  # 存储成功替换父代的交叉概率
         self.FES = 0  # 评估次数
         self.global_best_fitness = float("inf")  # 全局最优适应度
-        self.global_best = np.zeros(self.dimension).astype(int)  # 全局最优解
+        self.global_best = np.zeros(self.dimension,dtype=int)  # 全局最优解
         self.f_best = []
-        self.knn = KNeighborsClassifier(n_neighbors=5)
-        pass
+        self.t=tqdm(total=self.max_FES,desc="DE_JADE",bar_format=bar_format)
+        for i in range(self.size):
+            # 将x[i]初始化为0-1之间的随机数
+            self.x[i] = np.random.rand(self.dimension)
+            # 根据x[i]每个特征的值是否大于0.5来初始化种群
+            self.P[i] = (self.x[i] > 0.5).astype(int)
+            f_new = fitness(
+                self.alpha,
+                self.beta,
+                self.dimension,
+                self.X_train,
+                self.y_train,
+                self.P[i],
+                self.knn,
+            )
+
+            # 更新个体历史最优位置和全局最优位置
+            self.fitness_x[i] = f_new
+            if f_new < self.global_best_fitness:
+                self.global_best = self.P[i]
+                self.global_best_fitness = f_new
+        # 初始化缩放因子F和交叉概率CR
+        self.F = cauchy.rvs(loc=0.5, scale=0.1, size=1)[0]  # 从柯西分布中生成F
+        self.CR = np.random.normal(self.u_CR, 0.1, 1)[0]  # 从正态分布中生成CR
+        # 将CR限制在[0,1]之间
+        self.F = np.clip(self.F, 0, 1)
+        self.CR = np.clip(self.CR, 0, 1)
 
     # 计算Lehmer均值
     def mean_lehmer(self, p=2):
@@ -97,51 +123,10 @@ class DE_JADE:
         V = np.clip(V, 0, 1)
         return V
 
-    # 初始化种群
-    def init_solution(self):
-        self.P = np.zeros((self.size, self.dimension)).astype(int)  # 种群
-        self.x = np.zeros((self.size, self.dimension))
-        self.A = np.zeros((0, self.dimension))  # 存储被淘汰的父代个体
-        self.S_F = np.zeros(0)  # 存储成功的缩放因子
-        self.S_CR = np.zeros(0)  # 存储成功的交叉概率
-        self.FES = 0  # 评估次数
-        self.global_best_fitness = float("inf")  # 全局最优适应度
-        self.global_best = np.zeros(self.dimension).astype(int)  # 全局最优解
-        self.f_best = []
-        for i in range(self.size):
-            # 将x[i]初始化为0-1之间的随机数
-            self.x[i] = np.random.rand(self.dimension)
-            # 根据x[i]每个特征的值是否大于0.5来初始化种群
-            self.P[i] = (self.x[i] > 0.5).astype(int)
-            f_new = fitness(
-                self.alpha,
-                self.beta,
-                self.dimension,
-                self.X_train,
-                self.y_train,
-                self.P[i],
-                self.knn,
-            )
-
-            # 更新个体历史最优位置和全局最优位置
-            self.fitness_x[i] = f_new
-            if f_new < self.global_best_fitness:
-                self.global_best = self.P[i]
-                self.global_best_fitness = f_new
-        # 初始化缩放因子F和交叉概率CR
-        self.F = cauchy.rvs(loc=0.5, scale=0.1, size=1)[0]  # 从柯西分布中生成F
-        self.CR = np.random.normal(self.u_CR, 0.1, 1)[0]  # 从正态分布中生成CR
-        # 将CR限制在[0,1]之间
-        self.F = np.clip(self.F, 0, 1)
-        self.CR = np.clip(self.CR, 0, 1)
-
     # 更新种群
     def update(self):
-        for t in range(self.iterations):
-            if t % 10 == 0:
-                print(
-                    f"当前最优解x: {self.global_best}, fitness: {self.global_best_fitness:.6f}"
-                )
+        while self.FES < self.max_FES:
+            self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness})
             for i in range(self.size):
                 # 变异操作，根据变异策略生成新的个体V
                 V = self.F_current_to_pbest(i)
@@ -165,6 +150,7 @@ class DE_JADE:
                     self.knn,
                 )
 
+                # 如果适应度函数值更小，则替换父代
                 if f_u < self.fitness_x[i]:
                     self.A = np.append(self.A, [self.x[i]], axis=0)
                     self.P[i] = population_U
@@ -183,6 +169,7 @@ class DE_JADE:
                         self.global_best_fitness = f_u
 
                 self.FES += 1
+                self.t.update(1)
                 if self.FES >= self.max_FES:
                     self.f_best.append(self.global_best_fitness)
                     return
@@ -201,9 +188,15 @@ class DE_JADE:
     def fit(self):
         self.init_solution()
         self.update()
+                
         # 使用knn算法在测试集上进行测试
-        self.knn.fit(self.X_train, self.y_train)
-        y_pred = self.knn.predict(self.X_test)
-        acc = accuracy_score(self.y_test, y_pred)
-        print(f"测试集准确率: {acc*100:.2f}%")
-        return self.global_best
+        X_train = self.X_train.iloc[:,self.global_best==1]
+        X_test = self.X_test.iloc[:,self.global_best==1]
+        # 如果选择的特征数量为0，则返回0，否则返回在测试集上的准确率
+        if X_train.shape[1] == 0:
+            return 0
+        self.knn.fit(X_train, self.y_train)
+        y_pred = self.knn.predict(X_test)
+        self.accuracy = accuracy_score(self.y_test, y_pred)
+        self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness,"accuracy":self.accuracy})
+        return self.accuracy

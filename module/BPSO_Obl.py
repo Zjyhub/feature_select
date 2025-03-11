@@ -7,7 +7,6 @@ class BPSO_Obl:
         self,
         X,
         y,
-        iterations=100,
         size=20,
         v_high=6,
         alpha=0.99,
@@ -26,7 +25,6 @@ class BPSO_Obl:
         参数:
         X: 特征矩阵，形状为 (样本数量, 特征数量)
         y: 目标类别标签，形状为 (样本数量,)
-        iterations: 迭代次数，默认值为100
         size: 粒子群大小，默认值为20
         v_high: 粒子速度最大值，速度范围为 [-v_high, v_high]，默认值为6
         alpha: 惩罚系数，用于控制分类准确率的权重，默认值为0.99
@@ -40,7 +38,6 @@ class BPSO_Obl:
         max_FES: 最大评估次数，默认值为1000
         if_obl: 是否使用反转解，默认值为False
         """
-        self.iterations = iterations
         self.size = size
         self.v_high = v_high
         self.alpha = alpha
@@ -55,28 +52,22 @@ class BPSO_Obl:
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)
         self.dimension = X.shape[1]  # 特征数量
-        self.x = np.zeros((self.size, self.dimension))  # 使用一个二维数组来存储粒子群的位置
-        self.p_best = np.zeros(
-            (self.size, self.dimension)
-        )  # 使用一个二维数组来存储粒子群中每个粒子的历史最佳位置
-        self.global_best = np.zeros(self.dimension)  # 使用一个一维数组来存储粒子群的全局最佳位置
-        self.v = np.zeros((self.size, self.dimension))  # 使用一个二维数组来存储粒子群的速度
-        self.global_best_fitness = float("inf")  # 粒子群的全局最佳适应度初始化为正无穷
-        self.p_best_fitness = np.zeros(self.size)  # 使用一个一维数组来存储粒子群中每个粒子的历史最佳适应度
-        self.f_best = []  # 存储每次迭代的全局最优适应度值
         self.knn = KNeighborsClassifier(n_neighbors=5)  # 使用k为5的KNN分类器
 
     # 初始化粒子群
     def init_solution(self):
-        self.x = np.zeros((self.size, self.dimension))  # 使用一个二维数组来存储粒子群的位置
+        self.x = np.zeros((self.size, self.dimension),dtype=int) # 使用一个二维数组来存储粒子群的位置
         self.p_best = np.zeros(
-            (self.size, self.dimension)
+            (self.size, self.dimension),
+            dtype=int
         )  # 使用一个二维数组来存储粒子群中每个粒子的历史最佳位置
-        self.global_best = np.zeros(self.dimension)  # 使用一个一维数组来存储粒子群的全局最佳位置
+        self.global_best = np.zeros(self.dimension,dtype=int)  # 使用一个一维数组来存储粒子群的全局最佳位置
         self.v = np.zeros((self.size, self.dimension))  # 使用一个二维数组来存储粒子群的速度
         self.global_best_fitness = float("inf")  # 粒子群的全局最佳适应度初始化为正无穷
         self.p_best_fitness = np.zeros(self.size)  # 使用一个一维数组来存储粒子群中每个粒子的历史最佳适应度
         self.f_best = []  # 存储每次迭代的全局最优适应度值
+        self.FES=0
+        self.t=tqdm(total=self.max_FES,desc="BPSO",bar_format=bar_format)
         for i in range(self.size):
             # 初始化粒子群的位置和速度,位置初始化为一个随机的二进制向量,速度初始化为一个随机的向量
             self.x[i] = np.random.choice([0, 1], self.dimension)  # 随机生成一个二进制向量
@@ -99,16 +90,10 @@ class BPSO_Obl:
 
     # 粒子群更新
     def update(self):
-        for t in range(self.iterations):
+        while self.FES<self.max_FES:
+            self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness})
             # 更新惯性权重
-            self.w = self.w_max - (self.w_max - self.w_min) * t / self.iterations
-
-            # 每迭代10次输出一次当前全局最优解
-            if t % 10 == 0:
-                print(   
-                    f"当前最优解x: {self.global_best}, fitness: {self.global_best_fitness:.6f}"
-                )
-
+            self.w = self.w_max - (self.w_max - self.w_min) * self.FES / self.max_FES
             # 遍历每个粒子，更新每个粒子的位置和速度
             for i in range(self.size):
                 # 更新当前粒子的速度
@@ -143,6 +128,7 @@ class BPSO_Obl:
                     self.x[i],
                     self.knn,
                 )  # 计算当前粒子的适应度函数值
+                self.FES+=1
 
                 # 使用反转解
                 obl_x = obl(self.x[i])  # 计算反转解
@@ -155,6 +141,7 @@ class BPSO_Obl:
                     obl_x,
                     self.knn,
                 )  # 计算反转解的适应度函数值
+                self.FES+=1
 
                 # 如果反转解的适应度函数值更优，则更新当前位置为反转解
                 if f_obl < f_new:
@@ -171,11 +158,11 @@ class BPSO_Obl:
                     self.global_best = self.p_best[i]
                     self.global_best_fitness = f_new
 
+                self.t.update(1)
                 # 如果评估次数超过最大评估次数，则停止迭代
-                if 2 * (t * self.size + i + 1) >= self.max_FES:
+                if self.FES >= self.max_FES:
                     self.f_best.append(self.global_best_fitness)
                     return
-
             # 记录每次迭代的全局最优适应度值
             self.f_best.append(self.global_best_fitness)
 
@@ -183,9 +170,15 @@ class BPSO_Obl:
     def fit(self):
         self.init_solution()  # 初始化粒子群
         self.update()  # 粒子群更新
+
         # 使用knn算法在测试集上进行测试
-        self.knn.fit(self.X_train, self.y_train)
-        y_pred = self.knn.predict(self.X_test)
-        acc = accuracy_score(self.y_test, y_pred)
-        print(f"测试集准确率: {acc*100:.2f}%")
-        return self.global_best
+        X_train = self.X_train.iloc[:,self.global_best==1]
+        X_test = self.X_test.iloc[:,self.global_best==1]
+        # 如果选择的特征数量为0，则返回0，否则返回在测试集上的准确率
+        if X_train.shape[1] == 0:
+            return 0
+        self.knn.fit(X_train, self.y_train)
+        y_pred = self.knn.predict(X_test)
+        self.accuracy = accuracy_score(self.y_test, y_pred)
+        self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness,"accuracy":self.accuracy})
+        return self.accuracy

@@ -1,7 +1,14 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import os
+import time
+from tqdm import tqdm
+from datetime import datetime
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import accuracy_score
 
+bar_format = '{desc}: {n}it {elapsed} [{remaining},{rate_fmt}] {postfix} {percentage:3.1f}% |{bar}|'
 
 # 返回sigmoid函数值
 def sigmoid(x):
@@ -61,6 +68,49 @@ def fitness(alpha, beta, dimension, train_X, y, x, knn, k=5):
     f = alpha * err_rate + beta * s / dimension  # 计算适应度函数值
     return f.astype(float)
 
+# 保存结果到文件
+def save_result(algorithm_name, accuracy_mean, best_solution, best_accuracy, run_times, Dataset):
+        # 保存结果追加到文件中,记录格式为: [时间] [算法名称][运行次数][平均准确率][最优解][最佳准确率]
+        # 如果文件不存在则创建文件
+        if not os.path.exists(f"./output/{algorithm_name}/result"):
+            os.makedirs(f"./output/{algorithm_name}/result")
+
+        with open(f"./output/{algorithm_name}/result/{algorithm_name}_{Dataset}.txt", "a") as f:
+            date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            f.write(f"[{date}] {algorithm_name}运行{run_times}次的平均准确率为: {accuracy_mean*100:.2f}%, 最优解: {best_solution}, 最佳准确率: {best_accuracy:.2f}%\n")
+
+# 保存图像
+def save_figure(algorithm_name, f_list, run_times, Dataset):
+    # f_list:是一个二维数组，每一行代表一次运行的适应度值
+    # 计算f_list每一列的中位数
+    if not os.path.exists(f"./output/{algorithm_name}/figure"):
+        os.makedirs(f"./output/{algorithm_name}/figure")
+    median = np.median(f_list, axis=0)
+    plt.plot(median, label=algorithm_name)
+    plt.xlabel("iteration")
+    plt.ylabel("fitness")
+    plt.legend()
+    plt.title(f"{algorithm_name} run {run_times} times")
+    plt.savefig(f"./output/{algorithm_name}/figure/{algorithm_name}_{Dataset}.png")
+
+# 根据传入路径读取数据，返回特征矩阵X和目标类别标签y
+def read_uci_data(path, y_index=0):
+    data = pd.read_csv(path, header=None)  # 读取数据
+
+    X = data.iloc[
+        :,
+        [
+            i
+            for i in range(data.shape[1])
+            if i != y_index and i - data.shape[1] != y_index
+        ],
+    ]  # 特征矩阵
+    y = data.iloc[:, y_index]
+
+    # 将y根据类别进行编码
+    unique_y = y.unique()
+    y = y.apply(lambda x: unique_y.tolist().index(x))
+    return X, y
 
 # 编写CEC2017的测试函数
 def cec2017_F1(x):

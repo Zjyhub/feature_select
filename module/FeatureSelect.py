@@ -10,240 +10,128 @@ from matplotlib import pyplot as plt
 
 
 class FeatureSelect:
-    def __init__(self, X, y, M=20):
+    def __init__(self, X, y,Dataset, M=20):
         """
         初始化特征选择对象
 
         参数:
         X: 特征矩阵，形状为 (样本数量, 特征数量)
         y: 目标类别标签，形状为 (样本数量,)
+        Dataset: 数据集名称
         M: 特征选择次数，默认值为1
         """
         self.X = X
         self.y = y
+        self.Dataset = Dataset
         self.M = M
 
-    def fit_BPSO(self, name):
-        bpso = BPSO(self.X, self.y)  # 初始化BPSO对象
-        bpso.fit()  # 运行BPSO算法
+        self.BPSO=BPSO(self.X, self.y)
+        self.BPSO_Obl=BPSO_Obl(self.X, self.y)
+        self.DE=DE(self.X, self.y)
+        self.DE_JADE=DE_JADE(self.X, self.y)
+        self.DE_SHADE=DE_SHADE(self.X, self.y)
+        self.DE_LSHADE=DE_LSHADE(self.X, self.y)
+        self.DE_RL_LSHADE=DE_RL_LSHADE(self.X, self.y)
 
-        print(f"\nBPSO 最优解: {bpso.global_best}, 适应度函数值: {bpso.global_best_fitness:.6f}\n")
+    def choose_algorithm(self, algorithm_name):
+        # 根据算法名称选择对应的算法
+        if algorithm_name == "BPSO":
+            model = self.BPSO
+        elif algorithm_name == "BPSO_Obl":
+            model = self.BPSO_Obl
+        elif algorithm_name == "DE":
+            model = self.DE
+        elif algorithm_name == "DE_JADE":
+            model = self.DE_JADE
+        elif algorithm_name == "DE_SHADE":
+            model = self.DE_SHADE
+        elif algorithm_name == "DE_LSHADE":
+            model = self.DE_LSHADE
+        elif algorithm_name == "DE_RL_LSHADE":
+            model = self.DE_RL_LSHADE
+        else:
+            raise ValueError("未知的算法名称")
+        
+        return model
 
-        # 画图,横坐标为迭代次数，纵坐标为适应度函数值
-        plt.plot(bpso.f_best, label="BPSO")
+    def fit(
+        self,
+        algorithm_name, # 算法名称
+        run_times=1, # 运行次数
+        is_save=True, # 是否保存结果
+        is_plot=True, # 是否画图
+    ):
+        
+        model = self.choose_algorithm(algorithm_name)  # 根据算法名称选择对应的算法
+            
+        
+        # 初始化结果列表
+        accuracy_list = []
+        solution_list = []
+        f_list = []
+
+        print(f"{algorithm_name} 对{self.Dataset}数据集的特征选择，开始运行...")
+        for i in range(run_times):
+            accuracy_list.append(model.fit())
+            solution_list.append(model.global_best)
+            f_list.append(model.f_best)
+                
+        # 根据accuracy_list计算平均准确率，并找到最优解
+        accuracy_mean = np.mean(accuracy_list)
+        best_index = np.argmax(accuracy_list)
+        best_solution = solution_list[best_index]
+        best_accuracy = accuracy_list[best_index]
+
+        print(f"\n{algorithm_name} 运行{run_times}次的平均准确率为: {accuracy_mean*100:.2f}%, 最优解: {best_solution}, 最佳准确率: {best_accuracy*100:.2f}%")
+        print(f"{algorithm_name} 对{self.Dataset}数据集的特征选择，运行结束...\n")
+
+        # 将结果保存到文件
+        if is_save:
+            save_result(algorithm_name,accuracy_mean, best_solution,best_accuracy,run_times,self.Dataset)
+
+        if is_plot:
+            save_figure(algorithm_name, f_list, run_times, self.Dataset)
+           
+        return accuracy_mean, best_solution, best_accuracy,f_list
+
+
+
+    def compare(
+        self,
+        algorithm_list, # 算法名称列表
+        run_times=1, # 运行次数
+    ):
+        accuracy_list = []
+        solution_list = []
+        for i in range(len(algorithm_list)):
+            _, best_solution, best_accuracy,f_list = self.fit(algorithm_list[i], run_times, False, False)
+            accuracy_list.append(best_accuracy)
+            solution_list.append(best_solution) 
+            median = np.median(f_list, axis=0)
+            plt.plot(median, label=algorithm_list[i])
+        
+        # 根据accuracy_list找到最优解
+        best_index = np.argmax(accuracy_list)
+        best_solution = solution_list[best_index]
+        best_accuracy = accuracy_list[best_index]
+        print(f"\n对{self.Dataset}数据集的特征选择，比较结果如下:")
+        print(f"最优算法: {algorithm_list[best_index]}, 最优解: {best_solution}, 最佳准确率: {best_accuracy:.2f}%\n")
+
+        # 根据accuracy_list的大小排序输出算法
+        sorted_index = np.argsort(accuracy_list)[::-1]
+        print("按准确率降序排序:")
+        for i in range(len(algorithm_list)):
+            print(f"{algorithm_list[sorted_index[i]]}: {accuracy_list[sorted_index[i]]:.2f}%")
+
+
+        plt.title(f"{self.Dataset} Comparison")
+        plt.legend()
         plt.xlabel("iteration")
         plt.ylabel("fitness")
-        plt.legend()
-        plt.title(name)
-        plt.savefig("./output/BPSO.png")
         plt.show()
 
-    def fit_BPSO_Obl(self, name):
-        bpso_obl = BPSO_Obl(self.X, self.y)  # 初始化BPSO_Obl对象
-        bpso_obl.fit()  # 运行BPSO_Obl算法
+        
 
-        print(
-            f"\nBPSO_Obl 最优解: {bpso_obl.global_best}, 适应度函数值: {bpso_obl.global_best_fitness:.6f}\n"
-        )
 
-        # 画图,横坐标为迭代次数，纵坐标为适应度函数值
-        plt.plot(bpso_obl.f_best, label="BPSO_Obl")
-        plt.xlabel("iteration")
-        plt.ylabel("fitness")
-        plt.legend()
-        plt.title(name)
-        plt.savefig("./output/BPSO_Obl.png")
-        plt.show()
 
-    def fit_DE(self, name):
-        de_model = DE(self.X, self.y)  # 初始化DE对象
-        de_model.fit()  # 运行DE算法
-
-        print(
-            f"\nDE 最优解: {de_model.global_best}, 适应度函数值: {de_model.global_best_fitness:.6f}\n"
-        )
-
-        plt.plot(de_model.f_best, label="DE")
-        plt.xlabel("iteration")
-        plt.ylabel("fitness")
-        plt.legend()
-        plt.title(name)
-        plt.savefig("./output/DE.png")
-        plt.show()
-
-    def fit_DE_JADE(self, name):
-        de_jade = DE_JADE(self.X, self.y)  # 初始化DE_JADE对象
-        de_jade.fit()  # 运行DE_JADE算法
-
-        print(
-            f"\nDE_JADE 最优解: {de_jade.global_best}, 适应度函数值: {de_jade.global_best_fitness:.6f}\n"
-        )
-
-        plt.plot(de_jade.f_best, label="DE_JADE")
-        plt.xlabel("iteration")
-        plt.ylabel("fitness")
-        plt.legend()
-        plt.title(name)
-        plt.savefig("./output/DE_JADE.png")
-        plt.show()
-
-    def fit_DE_SHADE(self, name):
-        de_shade = DE_SHADE(self.X, self.y)
-        de_shade.fit()
-
-        print(
-            f"\nDE_SHADE 最优解: {de_shade.global_best}, 适应度函数值: {de_shade.global_best_fitness:.6f}\n"
-        )
-
-        plt.plot(de_shade.f_best, label="DE_SHADE")
-        plt.xlabel("iteration")
-        plt.ylabel("fitness")
-        plt.legend()
-        plt.title(name)
-        plt.savefig("./output/DE_SHADE.png")
-        plt.show()
-
-    def fit_DE_LSHADE(self, name):
-        de_lshade = DE_LSHADE(self.X, self.y)
-        de_lshade.fit()
-
-        print(
-            f"\nDE_LSHADE 最优解: {de_lshade.global_best}, 适应度函数值: {de_lshade.global_best_fitness:.6f}\n"
-        )
-
-        plt.plot(de_lshade.f_best, label="DE_LSHADE")
-        plt.xlabel("iteration")
-        plt.ylabel("fitness")
-        plt.legend()
-        plt.title(name)
-        plt.savefig("./output/DE_LSHADE.png")
-        plt.show()
-
-    def fit_DE_RL_LSHADE(self, name):
-        de_rl_lshade = DE_RL_LSHADE(self.X, self.y)
-        de_rl_lshade.fit()
-
-        print(
-            f"\nDE_RL_LSHADE 最优解: {de_rl_lshade.global_best}, 适应度函数值: {de_rl_lshade.global_best_fitness:.6f}\n"
-        )
-
-        plt.plot(de_rl_lshade.f_best, label="DE_RL_LSHADE")
-        plt.xlabel("iteration")
-        plt.ylabel("fitness")
-        plt.legend()
-        plt.title(name)
-        plt.savefig("./output/DE_RL_LSHADE.png")
-        plt.show()
-
-    def compare(self):
-        bpso = BPSO(self.X, self.y)  # 初始化BPSO对象
-        bpso_obl = BPSO_Obl(self.X, self.y)  # 初始化BPSO_Obl对象
-        de = DE(self.X, self.y)  # 初始化DE对象
-        de_jade = DE_JADE(self.X, self.y)  # 初始化DE_JADE对象
-        de_shade = DE_SHADE(self.X, self.y)  # 初始化DE_SHADE对象
-        de_lshade = DE_LSHADE(self.X, self.y)  # 初始化DE_LSHADE对象
-        de_rl_lshade = DE_RL_LSHADE(self.X, self.y)  # 初始化DE_RL_LSHADE对象
-
-        bpso_gbest = []
-        bpso_obl_gbest = []
-        de_gbest = []
-        de_jade_gbest = []
-        de_shade_gbest = []
-        de_lshade_gbest = []
-        de_rl_lshade_gbest = []
-
-        bpso_best_fitness = []
-        bpso_obl_best_fitness = []
-        de_best_fitness = []
-        de_jade_best_fitness = []
-        de_shade_best_fitness = []
-        de_lshade_best_fitness = []
-        de_rl_lshade_best_fitness = []
-
-        for i in range(self.M):
-            print(f"\n第{i+1}次特征选择:")
-
-            print("\nBPSO:")
-            bpso_gbest.append(bpso.fit())
-            bpso_best_fitness.append(bpso.global_best_fitness)
-
-            print("\nBPSO_Obl:")
-            bpso_obl_gbest.append(bpso_obl.fit())
-            bpso_obl_best_fitness.append(bpso_obl.global_best_fitness)
-
-            print("\nDE:")
-            de_gbest.append(de.fit())
-            de_best_fitness.append(de.global_best_fitness)
-
-            print("\nDE_JADE:")
-            de_jade_gbest.append(de_jade.fit())
-            de_jade_best_fitness.append(de_jade.global_best_fitness)
-
-            print("\nDE_SHADE:")
-            de_shade_gbest.append(de_shade.fit())
-            de_shade_best_fitness.append(de_shade.global_best_fitness)
-
-            print("\nDE_LSHADE:")
-            de_lshade_gbest.append(de_lshade.fit())
-            de_lshade_best_fitness.append(de_lshade.global_best_fitness)
-
-            print("\nDE_RL_LSHADE:")
-            de_rl_lshade_gbest.append(de_rl_lshade.fit())
-            de_rl_lshade_best_fitness.append(de_rl_lshade.global_best_fitness)
-
-            print(
-                f"BPSO 本次最优解: \t{bpso_gbest[-1]}, 适应度函数值: {bpso_best_fitness[-1]:.6f}"
-            )
-            print(
-                f"BPSO_Obl 本次最优解: \t{bpso_obl_gbest[-1]}, 适应度函数值: {bpso_obl_best_fitness[-1]:.6f}"
-            )
-            print(f"DE 本次最优解: \t\t{de_gbest[-1]}, 适应度函数值: {de_best_fitness[-1]:.6f}")
-            print(
-                f"DE_JADE 本次最优解: \t{de_jade_gbest[-1]}, 适应度函数值: {de_jade.global_best_fitness:.6f}"
-            )
-            print(
-                f"DE_SHADE 本次最优解: \t{de_shade_gbest[-1]}, 适应度函数值: {de_shade.global_best_fitness:.6f}"
-            )
-            print(
-                f"DE_LSHADE 本次最优解: \t{de_lshade_gbest[-1]}, 适应度函数值: {de_lshade.global_best_fitness:.6f}"
-            )
-            print(
-                f"DE_RL_LSHADE 本次最优解: \t{de_rl_lshade_gbest[-1]}, 适应度函数值: {de_rl_lshade.global_best_fitness:.6f}"
-            )
-
-        print(f"\n运行{self.M}次特征选择的结果:")
-        print(
-            f"BPSO 平均适应度函数值:\t{np.mean(bpso_best_fitness):.6f} , 最优适应度函数值:{np.min(bpso_best_fitness):.6f}, 最优解:{bpso_gbest[np.argmin(bpso_best_fitness)]}"
-        )
-        print(
-            f"BPSO_Obl 平均适应度函数值:\t{np.mean(bpso_obl_best_fitness):.6f} , 最优适应度函数值:{np.min(bpso_obl_best_fitness):.6f}, 最优解:{bpso_obl_gbest[np.argmin(bpso_obl_best_fitness)]}"
-        )
-        print(
-            f"DE 平均适应度函数值:\t{np.mean(de_best_fitness):.6f} , 最优适应度函数值:{np.min(de_best_fitness):.6f}, 最优解:{de_gbest[np.argmin(de_best_fitness)]}"
-        )
-        print(
-            f"DE_JADE 平均适应度函数值:\t{np.mean(de_jade_best_fitness):.6f} , 最优适应度函数值:{np.min(de_jade_best_fitness):.6f}, 最优解:{de_jade_gbest[np.argmin(de_jade_best_fitness)]}"
-        )
-        print(
-            f"DE_SHADE 平均适应度函数值:\t{np.mean(de_shade_best_fitness):.6f} , 最优适应度函数值:{np.min(de_shade_best_fitness):.6f}, 最优解:{de_shade_gbest[np.argmin(de_shade_best_fitness)]}"
-        )
-        print(
-            f"DE_LSHADE 平均适应度函数值:\t{np.mean(de_lshade_best_fitness):.6f} , 最优适应度函数值:{np.min(de_lshade_best_fitness):.6f}, 最优解:{de_lshade_gbest[np.argmin(de_lshade_best_fitness)]}"
-        )
-        print(
-            f"DE_RL_LSHADE 平均适应度函数值:\t{np.mean(de_rl_lshade_best_fitness):.6f} , 最优适应度函数值:{np.min(de_rl_lshade_best_fitness):.6f}, 最优解:{de_rl_lshade_gbest[np.argmin(de_rl_lshade_best_fitness)]}"
-        )
-
-        plt.plot(bpso_best_fitness, label="BPSO")
-        plt.plot(bpso_obl_best_fitness, label="BPSO_Obl")
-        plt.plot(de_best_fitness, label="DE")
-        plt.plot(de_jade_best_fitness, label="DE_JADE")
-        plt.plot(de_shade_best_fitness, label="DE_SHADE")
-        plt.plot(de_lshade_best_fitness, label="DE_LSHADE")
-        plt.plot(de_rl_lshade_best_fitness, label="DE_RL_LSHADE")
-        plt.title("compare")
-        plt.xlabel("M")
-        plt.ylabel("fitness")
-        plt.legend()
-        plt.savefig("./compare.png")
-        plt.show()
+        
