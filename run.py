@@ -1,3 +1,10 @@
+'''
+Description: 
+Author: Zjy
+Date: 2025-03-03 23:45:26
+LastEditTime: 2025-03-04 23:02:17
+version: 1.0
+'''
 import pandas as pd
 from module.FeatureSelect import *
 
@@ -53,5 +60,5 @@ if __name__ == "__main__":
     # f.fit_DE_JADE("wine")  # 运行DE_JADE算法
     # f.fit_DE_SHADE("wine")  # 运行DE_SHADE算法
     # f.fit_DE_LSHADE("wine")  # 运行DE_LSHADE算法
-    f.fit_DE_RL_LSHADE("wine")  # 运行DE_RL_LSHADE算法
-    # f.compare()  # 比较四种算法的性能
+    # f.fit_DE_RL_LSHADE("wine")  # 运行DE_RL_LSHADE算法
+    f.compare()  # 比较四种算法的性能

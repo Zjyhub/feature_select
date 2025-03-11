@@ -162,24 +162,32 @@ class FeatureSelect:
 
         for i in range(self.M):
             print(f"\n第{i+1}次特征选择:")
+
+            print("\nBPSO:")
             bpso_gbest.append(bpso.fit())
             bpso_best_fitness.append(bpso.global_best_fitness)
 
+            print("\nBPSO_Obl:")
             bpso_obl_gbest.append(bpso_obl.fit())
             bpso_obl_best_fitness.append(bpso_obl.global_best_fitness)
 
+            print("\nDE:")
             de_gbest.append(de.fit())
             de_best_fitness.append(de.global_best_fitness)
 
+            print("\nDE_JADE:")
             de_jade_gbest.append(de_jade.fit())
             de_jade_best_fitness.append(de_jade.global_best_fitness)
 
+            print("\nDE_SHADE:")
             de_shade_gbest.append(de_shade.fit())
             de_shade_best_fitness.append(de_shade.global_best_fitness)
 
+            print("\nDE_LSHADE:")
             de_lshade_gbest.append(de_lshade.fit())
             de_lshade_best_fitness.append(de_lshade.global_best_fitness)
 
+            print("\nDE_RL_LSHADE:")
             de_rl_lshade_gbest.append(de_rl_lshade.fit())
             de_rl_lshade_best_fitness.append(de_rl_lshade.global_best_fitness)
 

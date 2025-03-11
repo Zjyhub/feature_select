@@ -40,8 +40,6 @@ class BPSO_Obl:
         max_FES: 最大评估次数，默认值为1000
         if_obl: 是否使用反转解，默认值为False
         """
-        self.X = X
-        self.y = y
         self.iterations = iterations
         self.size = size
         self.v_high = v_high
@@ -55,6 +53,7 @@ class BPSO_Obl:
         self.w_min = w_min
         self.max_FES = max_FES
 
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)
         self.dimension = X.shape[1]  # 特征数量
         self.x = np.zeros((self.size, self.dimension))  # 使用一个二维数组来存储粒子群的位置
         self.p_best = np.zeros(
@@ -86,8 +85,8 @@ class BPSO_Obl:
                 self.alpha,
                 self.beta,
                 self.dimension,
-                self.X,
-                self.y,
+                self.X_train,
+                self.y_train,
                 self.x[i],
                 self.knn,
             )  # 计算适应度函数值
@@ -139,8 +138,8 @@ class BPSO_Obl:
                     self.alpha,
                     self.beta,
                     self.dimension,
-                    self.X,
-                    self.y,
+                    self.X_train,
+                    self.y_train,
                     self.x[i],
                     self.knn,
                 )  # 计算当前粒子的适应度函数值
@@ -151,8 +150,8 @@ class BPSO_Obl:
                     self.alpha,
                     self.beta,
                     self.dimension,
-                    self.X,
-                    self.y,
+                    self.X_train,
+                    self.y_train,
                     obl_x,
                     self.knn,
                 )  # 计算反转解的适应度函数值
@@ -184,4 +183,9 @@ class BPSO_Obl:
     def fit(self):
         self.init_solution()  # 初始化粒子群
         self.update()  # 粒子群更新
+        # 使用knn算法在测试集上进行测试
+        self.knn.fit(self.X_train, self.y_train)
+        y_pred = self.knn.predict(self.X_test)
+        acc = accuracy_score(self.y_test, y_pred)
+        print(f"测试集准确率: {acc*100:.2f}%")
         return self.global_best

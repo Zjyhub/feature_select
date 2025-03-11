@@ -36,11 +36,9 @@ class DE_LSHADE:
         p: 控制参数，用来选择前p%的个体，默认值为0.05
         H: 控制参数，表示记录的M_F和M_CR的长度，默认值为5
         r_arc: 控制参数，控制被淘汰的父代个体的数量为r_arc*size，默认值为2
-        cr_terminal: 控制参数，当M_CR小于mcr_terminal时停止，默认值为0.6
+        mcr_terminal: 控制参数，当M_CR小于mcr_terminal时停止，默认值为0.6
         max_FES: 最大评估次数，默认值为1000
         """
-        self.X = X
-        self.y = y
         self.iterations = iterations
         self.init_size = init_size
         self.min_size = min_size
@@ -52,10 +50,10 @@ class DE_LSHADE:
         self.H = H
         self.r_arc = r_arc
         self.mcr_terminal = mcr_terminal
-
         self.max_FES = max_FES
-        self.dimension = X.shape[1]
 
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+        self.dimension = X.shape[1]
         self.F = -1
         self.CR = -1
         self.size = init_size
@@ -157,8 +155,8 @@ class DE_LSHADE:
                 self.alpha,
                 self.beta,
                 self.dimension,
-                self.X,
-                self.y,
+                self.X_train,
+                self.y_train,
                 self.P[i],
                 self.knn,
             )
@@ -209,8 +207,8 @@ class DE_LSHADE:
                     self.alpha,
                     self.beta,
                     self.dimension,
-                    self.X,
-                    self.y,
+                    self.X_train,
+                    self.y_train,
                     population_U,
                     self.knn,
                 )
@@ -218,8 +216,8 @@ class DE_LSHADE:
                     self.alpha,
                     self.beta,
                     self.dimension,
-                    self.X,
-                    self.y,
+                    self.X_train,
+                    self.y_train,
                     self.P[i],
                     self.knn,
                 )
@@ -259,4 +257,9 @@ class DE_LSHADE:
     def fit(self):
         self.init_solution()
         self.update()
+        # 使用knn算法在测试集上进行测试
+        self.knn.fit(self.X_train, self.y_train)
+        y_pred = self.knn.predict(self.X_test)
+        acc = accuracy_score(self.y_test, y_pred)
+        print(f"测试集准确率: {acc*100:.2f}%")
         return self.global_best
