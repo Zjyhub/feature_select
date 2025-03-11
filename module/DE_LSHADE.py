@@ -243,6 +243,7 @@ class DE_LSHADE:
                 if self.FES >= self.max_FES:
                     self.f_best.append(self.global_best_fitness)
                     return
+            self.reduce_population()
             # 更新M_F和M_CR
             if len(self.S_F) > 0 and len(self.S_CR) > 0:
                 for i in range(self.H):
