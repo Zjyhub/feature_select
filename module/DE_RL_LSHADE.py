@@ -79,7 +79,7 @@ class DE_RL_LSHADE:
         self.global_best = np.zeros(self.dimension).astype(int)  # 全局最优解
         self.f_best = []  # 存储全局最优适应度值
         self.State = np.zeros(self.size).astype(int)  # 记录每个个体的状态，0表示当前个体优于之前的父代，1表示当前个体劣于之前的父代
-        self.Q_table = np.zeros((2, 7))  # Q表, 2个状态，7个动作
+        self.Q_table = np.zeros((self.size,2, 7))  # Q表, 2个状态，7个动作，每个个体有一个Q表
         self.knn = KNeighborsClassifier(n_neighbors=5)
         pass
 
@@ -257,12 +257,12 @@ class DE_RL_LSHADE:
             reward = 1
         else:
             reward = 0
-        self.Q_table[self.State[i], choice] = self.Q_table[
+        self.Q_table[i][self.State[i], choice] = self.Q_table[i][
             self.State[i], choice
         ] + self.alpha_lr * (
             reward
-            + self.gamma * np.max(self.Q_table[1 - self.State[i]])
-            - self.Q_table[self.State[i], choice]
+            + self.gamma * np.max(self.Q_table[i][1 - self.State[i]])
+            - self.Q_table[i][self.State[i], choice]
         )
 
     def reduce_population(self):
