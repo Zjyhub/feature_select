@@ -92,8 +92,8 @@ class DE:
     # 更新种群
     def update(self):
         while self.FES < self.max_FES:
-            self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness})
-            for i in range(self.size):
+            self.t.set_postfix({"solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+            for i in tqdm(range(self.size),desc="种群进化中",leave=False):
                 # 选择不同变异策略
                 V = self.F_rand_1(i)
 
@@ -141,5 +141,6 @@ class DE:
         self.knn.fit(X_train, self.y_train)
         y_pred = self.knn.predict(X_test)
         self.accuracy = accuracy_score(self.y_test, y_pred)
-        self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness,"accuracy":self.accuracy})
+        self.t.set_postfix({"accuracy":f"{self.accuracy*100:.2f}%","solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+        self.t.close()
         return self.accuracy

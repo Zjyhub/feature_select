@@ -130,8 +130,8 @@ class DE_SHADE:
     # 更新种群
     def update(self):
         while self.FES < self.max_FES:
-            self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness})
-            for i in range(self.size):
+            self.t.set_postfix({"solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+            for i in tqdm(range(self.size),desc="种群进化中",leave=False):
                 # 在[0,H)之间随机选择一个整数]
                 r_i = np.random.choice(self.H, 1)[0]
 
@@ -215,5 +215,6 @@ class DE_SHADE:
         self.knn.fit(X_train, self.y_train)
         y_pred = self.knn.predict(X_test)
         self.accuracy = accuracy_score(self.y_test, y_pred)
-        self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness,"accuracy":self.accuracy})
+        self.t.set_postfix({"accuracy":f"{self.accuracy*100:.2f}%","solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+        self.t.close()
         return self.accuracy

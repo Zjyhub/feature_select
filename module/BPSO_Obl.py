@@ -2,7 +2,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from module.utils import *
 
 
-class BPSO_Obl:
+class BPSO_OBL:
     def __init__(
         self,
         X,
@@ -67,7 +67,7 @@ class BPSO_Obl:
         self.p_best_fitness = np.zeros(self.size)  # 使用一个一维数组来存储粒子群中每个粒子的历史最佳适应度
         self.f_best = []  # 存储每次迭代的全局最优适应度值
         self.FES=0
-        self.t=tqdm(total=self.max_FES,desc="BPSO",bar_format=bar_format)
+        self.t=tqdm(total=self.max_FES,desc="BPSO_OBL",bar_format=bar_format)
         for i in range(self.size):
             # 初始化粒子群的位置和速度,位置初始化为一个随机的二进制向量,速度初始化为一个随机的向量
             self.x[i] = np.random.choice([0, 1], self.dimension)  # 随机生成一个二进制向量
@@ -91,11 +91,11 @@ class BPSO_Obl:
     # 粒子群更新
     def update(self):
         while self.FES<self.max_FES:
-            self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness})
+            self.t.set_postfix({"solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
             # 更新惯性权重
             self.w = self.w_max - (self.w_max - self.w_min) * self.FES / self.max_FES
             # 遍历每个粒子，更新每个粒子的位置和速度
-            for i in range(self.size):
+            for i in tqdm(range(self.size),desc="种群进化中",leave=False):
                 # 更新当前粒子的速度
                 self.v[i] = (
                     self.w * self.v[i]
@@ -129,6 +129,7 @@ class BPSO_Obl:
                     self.knn,
                 )  # 计算当前粒子的适应度函数值
                 self.FES+=1
+                self.t.update(1)
 
                 # 使用反转解
                 obl_x = obl(self.x[i])  # 计算反转解
@@ -142,6 +143,7 @@ class BPSO_Obl:
                     self.knn,
                 )  # 计算反转解的适应度函数值
                 self.FES+=1
+                self.t.update(1)
 
                 # 如果反转解的适应度函数值更优，则更新当前位置为反转解
                 if f_obl < f_new:
@@ -158,7 +160,6 @@ class BPSO_Obl:
                     self.global_best = self.p_best[i]
                     self.global_best_fitness = f_new
 
-                self.t.update(1)
                 # 如果评估次数超过最大评估次数，则停止迭代
                 if self.FES >= self.max_FES:
                     self.f_best.append(self.global_best_fitness)
@@ -180,5 +181,6 @@ class BPSO_Obl:
         self.knn.fit(X_train, self.y_train)
         y_pred = self.knn.predict(X_test)
         self.accuracy = accuracy_score(self.y_test, y_pred)
-        self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness,"accuracy":self.accuracy})
+        self.t.set_postfix({"accuracy":f"{self.accuracy*100:.2f}%","solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+        self.t.close()
         return self.accuracy

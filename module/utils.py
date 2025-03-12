@@ -8,7 +8,7 @@ from datetime import datetime
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import accuracy_score
 
-bar_format = '{desc}: {n}it {elapsed} [{remaining},{rate_fmt}] {postfix} {percentage:3.1f}% |{bar}|'
+bar_format = '{desc}: {n}/{total} {elapsed} [{remaining},{rate_fmt}] {postfix} {percentage:3.1f}% |{bar}|'
 
 # 返回sigmoid函数值
 def sigmoid(x):
@@ -77,7 +77,7 @@ def save_result(algorithm_name, accuracy_mean, best_solution, best_accuracy, run
 
         with open(f"./output/{algorithm_name}/result/{algorithm_name}_{Dataset}.txt", "a") as f:
             date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            f.write(f"[{date}] {algorithm_name}运行{run_times}次的平均准确率为: {accuracy_mean*100:.2f}%, 最优解: {best_solution}, 最佳准确率: {best_accuracy:.2f}%\n")
+            f.write(f"[{date}] {algorithm_name} run {run_times} times , mean accuracy: {accuracy_mean*100:.2f}%, best solution: {best_solution}, best accuracy: {best_accuracy:.2f}%\n")
 
 # 保存图像
 def save_figure(algorithm_name, f_list, run_times, Dataset):
@@ -105,6 +105,10 @@ def read_uci_data(path, y_index=0):
             if i != y_index and i - data.shape[1] != y_index
         ],
     ]  # 特征矩阵
+
+    # 将X中数据类型为string的列转换为数值类型
+    X=X.apply(pd.to_numeric, errors='coerce').fillna(0)
+
     y = data.iloc[:, y_index]
 
     # 将y根据类别进行编码

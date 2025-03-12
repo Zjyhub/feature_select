@@ -126,8 +126,8 @@ class DE_JADE:
     # 更新种群
     def update(self):
         while self.FES < self.max_FES:
-            self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness})
-            for i in range(self.size):
+            self.t.set_postfix({"solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+            for i in tqdm(range(self.size),desc="种群进化中",leave=False):
                 # 变异操作，根据变异策略生成新的个体V
                 V = self.F_current_to_pbest(i)
 
@@ -198,5 +198,6 @@ class DE_JADE:
         self.knn.fit(X_train, self.y_train)
         y_pred = self.knn.predict(X_test)
         self.accuracy = accuracy_score(self.y_test, y_pred)
-        self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness,"accuracy":self.accuracy})
+        self.t.set_postfix({"accuracy":f"{self.accuracy*100:.2f}%","solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+        self.t.close()
         return self.accuracy

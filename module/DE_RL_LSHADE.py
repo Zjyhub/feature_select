@@ -261,9 +261,9 @@ class DE_RL_LSHADE:
     # 策略选择
     def strategy_choice(self, i):
         choice_prob = np.zeros(7)
-        q_sum = np.sum(np.exp(self.Q_table[self.State[i]]))
+        q_sum = np.sum(np.exp(self.Q_table[i][self.State[i]]))
         for j in range(7):
-            choice_prob[j] = np.exp(self.Q_table[self.State[i], j]) / q_sum
+            choice_prob[j] = np.exp(self.Q_table[i][self.State[i], j]) / q_sum
         # 判断求和是否为1
         if np.sum(choice_prob) != 1:
             choice_prob[0] += 1 - np.sum(choice_prob)
@@ -293,6 +293,8 @@ class DE_RL_LSHADE:
         if num_to_remove <= -1:
             self.P = np.delete(self.P, sorted_index[num_to_remove:], axis=0)
             self.x = np.delete(self.x, sorted_index[num_to_remove:], axis=0)
+            self.Q_table = np.delete(self.Q_table, sorted_index[num_to_remove:], axis=0)
+            self.State = np.delete(self.State, sorted_index[num_to_remove:])
             self.fitness_x = np.delete(
                 self.fitness_x, sorted_index[num_to_remove:]
             )
@@ -310,8 +312,8 @@ class DE_RL_LSHADE:
     # 更新种群
     def update(self):
         while self.FES < self.max_FES:
-            self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness})
-            for i in range(self.size):
+            self.t.set_postfix({"solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+            for i in tqdm(range(self.size),desc="种群进化中",leave=False):
                 # 在[0,H)之间随机选择一个整数
                 r_i = np.random.choice(self.H, 1)[0]
 
@@ -418,5 +420,6 @@ class DE_RL_LSHADE:
         self.knn.fit(X_train, self.y_train)
         y_pred = self.knn.predict(X_test)
         self.accuracy = accuracy_score(self.y_test, y_pred)
-        self.t.set_postfix({"solution":self.global_best,"fitness":self.global_best_fitness,"accuracy":self.accuracy})
+        self.t.set_postfix({"accuracy":f"{self.accuracy*100:.2f}%","solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+        self.t.close()
         return self.accuracy

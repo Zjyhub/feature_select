@@ -1,6 +1,6 @@
 from module.utils import *
 from module.BPSO import *
-from module.BPSO_Obl import *
+from module.BPSO_OBL import *
 from module.DE import *
 from module.DE_JADE import *
 from module.DE_SHADE import *
@@ -26,7 +26,7 @@ class FeatureSelect:
         self.M = M
 
         self.BPSO=BPSO(self.X, self.y)
-        self.BPSO_Obl=BPSO_Obl(self.X, self.y)
+        self.BPSO_OBL=BPSO_OBL(self.X, self.y)
         self.DE=DE(self.X, self.y)
         self.DE_JADE=DE_JADE(self.X, self.y)
         self.DE_SHADE=DE_SHADE(self.X, self.y)
@@ -37,8 +37,8 @@ class FeatureSelect:
         # 根据算法名称选择对应的算法
         if algorithm_name == "BPSO":
             model = self.BPSO
-        elif algorithm_name == "BPSO_Obl":
-            model = self.BPSO_Obl
+        elif algorithm_name == "BPSO_OBL":
+            model = self.BPSO_OBL
         elif algorithm_name == "DE":
             model = self.DE
         elif algorithm_name == "DE_JADE":
@@ -82,7 +82,7 @@ class FeatureSelect:
         best_solution = solution_list[best_index]
         best_accuracy = accuracy_list[best_index]
 
-        print(f"\n{algorithm_name} 运行{run_times}次的平均准确率为: {accuracy_mean*100:.2f}%, 最优解: {best_solution}, 最佳准确率: {best_accuracy*100:.2f}%")
+        print(f"{algorithm_name} run {run_times} times , mean accuracy : {accuracy_mean*100:.2f}%, best solution: {best_solution}, best accuracy : {best_accuracy*100:.2f}%")
         print(f"{algorithm_name} 对{self.Dataset}数据集的特征选择，运行结束...\n")
 
         # 将结果保存到文件
@@ -102,36 +102,23 @@ class FeatureSelect:
         run_times=1, # 运行次数
     ):
         accuracy_list = []
-        solution_list = []
+
         for i in range(len(algorithm_list)):
-            _, best_solution, best_accuracy,f_list = self.fit(algorithm_list[i], run_times, False, False)
-            accuracy_list.append(best_accuracy)
-            solution_list.append(best_solution) 
+            mean_accuracy, _, _,f_list = self.fit(algorithm_list[i], run_times, False, False)
+            accuracy_list.append(mean_accuracy)
             median = np.median(f_list, axis=0)
             plt.plot(median, label=algorithm_list[i])
         
-        # 根据accuracy_list找到最优解
-        best_index = np.argmax(accuracy_list)
-        best_solution = solution_list[best_index]
-        best_accuracy = accuracy_list[best_index]
-        print(f"\n对{self.Dataset}数据集的特征选择，比较结果如下:")
-        print(f"最优算法: {algorithm_list[best_index]}, 最优解: {best_solution}, 最佳准确率: {best_accuracy:.2f}%\n")
-
-        # 根据accuracy_list的大小排序输出算法
+        # 根据accuracy_list平均准确率，并找到最优解
         sorted_index = np.argsort(accuracy_list)[::-1]
-        print("按准确率降序排序:")
+        print(f"\n对{self.Dataset}数据集的特征选择，按平均准确率降序排序,比较结果如下:")
         for i in range(len(algorithm_list)):
-            print(f"{algorithm_list[sorted_index[i]]}: {accuracy_list[sorted_index[i]]:.2f}%")
-
+            print(f"{algorithm_list[sorted_index[i]]}: {accuracy_list[sorted_index[i]]*100:.2f}%")
 
         plt.title(f"{self.Dataset} Comparison")
         plt.legend()
         plt.xlabel("iteration")
         plt.ylabel("fitness")
-        plt.show()
+        plt.savefig(f"./output/{self.Dataset}_Comparison.png")
 
-        
-
-
-
-        
+        return accuracy_list
