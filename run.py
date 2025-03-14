@@ -27,19 +27,19 @@ def save_table():
         col_index.append(Dataset_list[i][2])
         X, y = read_uci_data(Dataset_list[i][0], Dataset_list[i][1])
         fs = FeatureSelect(X, y, Dataset_list[i][2])
-        accuracy_list = fs.compare(algorithm_list=Alorithm_list, run_times=20)
-        accuracy_list = [f"{accuracy:.2f}%" for accuracy in accuracy_list]
+        accuracy_list = fs.compare(algorithm_list=Alorithm_list, run_times=2)
+        accuracy_list = [f"{accuracy*100:.2f}%" for accuracy in accuracy_list]
         dataset_accuracy.append(accuracy_list)
     df = pd.DataFrame(dataset_accuracy, columns=Alorithm_list, index=col_index)
     print(df.to_csv("./output/accuracy_table.csv"))
 
 
 if __name__ == "__main__":
-    # save_table()
+    save_table()
     
-    d_index = 0 # 选择数据集
-    a_index = 6 # 选择算法
-    X, y = read_uci_data(Dataset_list[d_index][0], Dataset_list[d_index][1])
-    fs = FeatureSelect(X, y, Dataset_list[d_index][2])
+    # d_index = 0 # 选择数据集
+    # a_index = 6 # 选择算法
+    # X, y = read_uci_data(Dataset_list[d_index][0], Dataset_list[d_index][1])
+    # fs = FeatureSelect(X, y, Dataset_list[d_index][2])
     # fs.fit(Alorithm_list[a_index], run_times=1)
-    fs.compare(algorithm_list=Alorithm_list, run_times=2)
+    # fs.compare(algorithm_list=Alorithm_list, run_times=2)

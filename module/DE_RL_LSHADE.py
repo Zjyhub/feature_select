@@ -41,9 +41,8 @@ class DE_RL_LSHADE:
         alpha_lr: 控制参数，用来更新Q表的参数，默认值为0.1
         max_FES: 最大评估次数，默认值为1000
         """
-        self.X_train = X
-        self.y_train = y
         self.size = init_size
+        self.init_size = init_size
         self.min_size = min_size
         self.alpha = alpha
         self.beta = beta
@@ -63,6 +62,7 @@ class DE_RL_LSHADE:
         
     # 初始化种群
     def init_solution(self):
+        self.size = self.init_size
         self.F = -1
         self.CR = -1
         self.P = np.zeros((self.size, self.dimension),dtype=int)  # 种群
