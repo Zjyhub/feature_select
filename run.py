@@ -2,7 +2,7 @@
 Description: 
 Author: Zjy
 Date: 2025-03-03 23:45:26
-LastEditTime: 2025-03-12 17:00:47
+LastEditTime: 2025-03-14 11:07:02
 version: 1.0
 '''
 from module.utils import read_uci_data
@@ -27,7 +27,7 @@ def save_table():
         col_index.append(Dataset_list[i][2])
         X, y = read_uci_data(Dataset_list[i][0], Dataset_list[i][1])
         fs = FeatureSelect(X, y, Dataset_list[i][2])
-        accuracy_list = fs.compare(algorithm_list=Alorithm_list, run_times=2)
+        accuracy_list = fs.compare(algorithm_list=Alorithm_list, run_times=20)
         accuracy_list = [f"{accuracy*100:.2f}%" for accuracy in accuracy_list]
         dataset_accuracy.append(accuracy_list)
     df = pd.DataFrame(dataset_accuracy, columns=Alorithm_list, index=col_index)
@@ -37,9 +37,9 @@ def save_table():
 if __name__ == "__main__":
     save_table()
     
-    # d_index = 0 # 选择数据集
-    # a_index = 6 # 选择算法
-    # X, y = read_uci_data(Dataset_list[d_index][0], Dataset_list[d_index][1])
-    # fs = FeatureSelect(X, y, Dataset_list[d_index][2])
-    # fs.fit(Alorithm_list[a_index], run_times=1)
-    # fs.compare(algorithm_list=Alorithm_list, run_times=2)
+    d_index = 0 # 选择数据集
+    a_index = 6 # 选择算法
+    X, y = read_uci_data(Dataset_list[d_index][0], Dataset_list[d_index][1])
+    fs = FeatureSelect(X, y, Dataset_list[d_index][2])
+    fs.fit(Alorithm_list[a_index], run_times=1)
+    fs.compare(algorithm_list=Alorithm_list, run_times=2)
