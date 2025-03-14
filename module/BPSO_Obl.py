@@ -130,6 +130,7 @@ class BPSO_OBL:
                 )  # 计算当前粒子的适应度函数值
                 self.FES+=1
                 self.t.update(1)
+                self.f_best.append(self.global_best_fitness)
 
                 # 使用反转解
                 obl_x = obl(self.x[i])  # 计算反转解
@@ -144,6 +145,7 @@ class BPSO_OBL:
                 )  # 计算反转解的适应度函数值
                 self.FES+=1
                 self.t.update(1)
+                
 
                 # 如果反转解的适应度函数值更优，则更新当前位置为反转解
                 if f_obl < f_new:
@@ -160,12 +162,11 @@ class BPSO_OBL:
                     self.global_best = self.p_best[i]
                     self.global_best_fitness = f_new
 
+                self.f_best.append(self.global_best_fitness)    
                 # 如果评估次数超过最大评估次数，则停止迭代
                 if self.FES >= self.max_FES:
-                    self.f_best.append(self.global_best_fitness)
                     return
-            # 记录每次迭代的全局最优适应度值
-            self.f_best.append(self.global_best_fitness)
+
 
     # 训练模型,返回全局最优位置
     def fit(self):

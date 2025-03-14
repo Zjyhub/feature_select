@@ -141,12 +141,10 @@ class BPSO:
 
                 self.FES += 1
                 self.t.update(1)
+                self.f_best.append(self.global_best_fitness)
                 # 如果评估次数超过最大评估次数，则停止迭代
                 if self.FES >= self.max_FES:
-                    self.f_best.append(self.global_best_fitness)
                     return
-            # 记录每次迭代的全局最优适应度值
-            self.f_best.append(self.global_best_fitness)
 
     # 训练模型,返回全局最优位置
     def fit(self):

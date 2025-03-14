@@ -123,10 +123,9 @@ class DE:
                         self.global_best_fitness = f_u
                 self.FES += 1
                 self.t.update(1)
+                self.f_best.append(self.global_best_fitness)
                 if self.FES >= self.max_FES:
-                    self.f_best.append(self.global_best_fitness)
                     return
-            self.f_best.append(self.global_best_fitness)
 
     def fit(self):
         self.init_solution()

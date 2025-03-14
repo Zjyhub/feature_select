@@ -170,8 +170,8 @@ class DE_JADE:
 
                 self.FES += 1
                 self.t.update(1)
+                self.f_best.append(self.global_best_fitness)
                 if self.FES >= self.max_FES:
-                    self.f_best.append(self.global_best_fitness)
                     return
             # 更新缩放因子F和交叉概率CR
             if len(self.S_CR) > 0:
@@ -183,7 +183,7 @@ class DE_JADE:
             self.u_F = (
                 1 - self.c
             ) * self.u_F + self.c * self.mean_lehmer()  # 如果c不为0，则利用成功替换父代的F的lehmer均值来更新u_F
-            self.f_best.append(self.global_best_fitness)
+            
 
     def fit(self):
         self.init_solution()

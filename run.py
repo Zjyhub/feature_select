@@ -2,7 +2,7 @@
 Description: 
 Author: Zjy
 Date: 2025-03-03 23:45:26
-LastEditTime: 2025-03-12 13:50:32
+LastEditTime: 2025-03-12 17:00:47
 version: 1.0
 '''
 from module.utils import read_uci_data
@@ -35,11 +35,11 @@ def save_table():
 
 
 if __name__ == "__main__":
-    save_table()
+    # save_table()
     
-    # d_index = 3 # 选择数据集
-    # a_index = 0 # 选择算法
-    # X, y = read_uci_data(Dataset_list[d_index][0], Dataset_list[d_index][1])
-    # fs = FeatureSelect(X, y, Dataset_list[d_index][2])
+    d_index = 0 # 选择数据集
+    a_index = 6 # 选择算法
+    X, y = read_uci_data(Dataset_list[d_index][0], Dataset_list[d_index][1])
+    fs = FeatureSelect(X, y, Dataset_list[d_index][2])
     # fs.fit(Alorithm_list[a_index], run_times=1)
-    # fs.compare(algorithm_list=Alorithm_list, run_times=1)
+    fs.compare(algorithm_list=Alorithm_list, run_times=2)

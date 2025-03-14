@@ -209,8 +209,9 @@ class DE_LSHADE:
 
                 self.FES += 1
                 self.t.update(1)
+                self.f_best.append(self.global_best_fitness)
+
                 if self.FES >= self.max_FES:
-                    self.f_best.append(self.global_best_fitness)
                     return
             self.reduce_population()
             # 更新M_F和M_CR
@@ -222,7 +223,6 @@ class DE_LSHADE:
                         self.M_CR[i] = np.mean(self.S_CR)
                     self.M_F[i] = self.mean_lehmer()
 
-            self.f_best.append(self.global_best_fitness)
 
     def fit(self):
         self.init_solution()
