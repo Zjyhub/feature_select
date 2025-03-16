@@ -8,17 +8,17 @@ class DE_LSHADE:
         self,
         X,
         y,
-        init_size=20,
+        init_size=global_params["size"],
         min_size=10,
-        alpha=0.99,
-        beta=0.01,
+        alpha=global_params["alpha"],
+        beta=global_params["beta"],
         u_F=0.5,
         u_CR=0.5,
         p=0.1,
         H=5,
         r_arc=2.0,
         mcr_terminal=0.6,
-        max_FES=1000,
+        max_FES=global_params["max_FES"],
     ):
         """
         初始化DE算法对象

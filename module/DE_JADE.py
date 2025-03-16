@@ -8,14 +8,14 @@ class DE_JADE:
         self,
         X,
         y,
-        size=20,
-        alpha=0.99,
-        beta=0.01,
+        size=global_params["size"],
+        alpha=global_params["alpha"],
+        beta=global_params["beta"],
         u_F=0.5,
         u_CR=0.5,
         c=0.2,
         p=0.05,
-        max_FES=1000,
+        max_FES=global_params["max_FES"],
     ):
         """
         初始化DE算法对象

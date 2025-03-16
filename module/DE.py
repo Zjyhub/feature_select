@@ -7,12 +7,12 @@ class DE:
         self,
         X,
         y,
-        size=20,
-        alpha=0.99,
-        beta=0.01,
+        size=global_params["size"],
+        alpha=global_params["alpha"],
+        beta=global_params["beta"],
         F=0.5,
         CR=0.5,
-        max_FES=1000,
+        max_FES=global_params["max_FES"],
     ):
         """
         初始化DE算法对象
