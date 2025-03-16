@@ -86,7 +86,10 @@ def save_figure(algorithm_name, f_list, run_times, Dataset):
     if not os.path.exists(f"./output/{algorithm_name}/figure"):
         os.makedirs(f"./output/{algorithm_name}/figure")
     median = np.median(f_list, axis=0)
-    plt.plot(median, label=algorithm_name)
+
+    sample_interval = 20
+    median = median[::sample_interval]
+    plt.plot(median, label=algorithm_name,marker='o')
     plt.xlabel("iteration")
     plt.ylabel("fitness")
     plt.legend()

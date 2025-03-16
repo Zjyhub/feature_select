@@ -107,6 +107,8 @@ class FeatureSelect:
             mean_accuracy, _, _,f_list = self.fit(algorithm_list[i], run_times, False, False)
             accuracy_list.append(mean_accuracy)
             median = np.median(f_list, axis=0)
+            sample_interval = 20
+            median = median[::sample_interval]
             plt.plot(median, label=algorithm_list[i])
         
         # 根据accuracy_list平均准确率，并找到最优解
