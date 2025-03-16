@@ -108,12 +108,12 @@ class BPSO_OBL:
                 for j in range(self.dimension):
                     # 如果r为1则使用sigmoid函数，否则使用tanh函数
                     if self.r == 1:
-                        self.x[i][j] = sigmoid(self.v[i][j])
+                        num = sigmoid(self.v[i][j])
                     else:
-                        self.x[i][j] = tanh(self.v[i][j])
+                        num = tanh(self.v[i][j])
 
                     # 如果随机数大于x[i][j]，则x[i][j]取1，否则取0
-                    if self.x[i][j] > np.random.rand():
+                    if num > np.random.rand():
                         self.x[i][j] = 1
                     else:
                         self.x[i][j] = 0
