@@ -7,17 +7,17 @@ class BPSO_OBL:
         self,
         X,
         y,
-        size=20,
+        size=global_params["size"],
         v_high=6,
-        alpha=0.99,
-        beta=0.01,
+        alpha=global_params["alpha"],
+        beta=global_params["beta"],
         c1=2.0,
         c2=2.0,
         r=1,
         w=1,
         w_max=0.9,
         w_min=0.4,
-        max_FES=1000,
+        max_FES=global_params["max_FES"],
     ):
         """
         初始化BPSO算法对象

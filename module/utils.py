@@ -10,6 +10,15 @@ from sklearn.metrics import accuracy_score
 
 bar_format = '{desc}: {n}/{total} {elapsed} [{remaining},{rate_fmt}] {postfix} {percentage:3.1f}% |{bar}|'
 
+# 设置全局参数
+global_params = {
+    "size": 20,
+    "alpha": 0.99,
+    "beta": 0.01,
+    "max_FES": 1000,
+}
+
+
 # 返回sigmoid函数值
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
