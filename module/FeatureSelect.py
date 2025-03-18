@@ -6,6 +6,7 @@ from module.DE_JADE import *
 from module.DE_SHADE import *
 from module.DE_LSHADE import *
 from module.DE_RL_LSHADE import *
+from module.DE_DynamicF import *
 from matplotlib import pyplot as plt
 
 
@@ -32,6 +33,7 @@ class FeatureSelect:
         self.DE_SHADE=DE_SHADE(self.X, self.y)
         self.DE_LSHADE=DE_LSHADE(self.X, self.y)
         self.DE_RL_LSHADE=DE_RL_LSHADE(self.X, self.y)
+        self.DE_DynamicF=DE_DynamicF(self.X,self.y)
 
     def choose_algorithm(self, algorithm_name):
         # 根据算法名称选择对应的算法
@@ -49,6 +51,8 @@ class FeatureSelect:
             model = self.DE_LSHADE
         elif algorithm_name == "DE_RL_LSHADE":
             model = self.DE_RL_LSHADE
+        elif algorithm_name == "DE_DynamicF":
+            model = self.DE_DynamicF
         else:
             raise ValueError("未知的算法名称")
         

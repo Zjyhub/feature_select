@@ -12,7 +12,7 @@ bar_format = '{desc}: {n}/{total} {elapsed} [{remaining},{rate_fmt}] {postfix} {
 
 # 设置全局参数
 global_params = {
-    "size": 20,
+    "size": 100,
     "alpha": 0.99,
     "beta": 0.01,
     "max_FES": 1000,
@@ -34,7 +34,7 @@ def obl(x):
     return 1 - x
 
 
-def fitness(alpha, beta, dimension, train_X, y, x, knn, k=5):
+def fitness(alpha, beta, dimension, train_X, y, x, knn, k=10):
     """
     计算适应度函数值
 
