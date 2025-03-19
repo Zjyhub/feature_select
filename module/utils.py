@@ -128,6 +128,31 @@ def read_uci_data(path, y_index=0):
     y = y.apply(lambda x: unique_y.tolist().index(x))
     return X, y
 
+def cal_accuracy(train_X, y, x, knn, k=5):
+    train_X = train_X.iloc[:, x == 1]
+
+    # 如果选择的特征数量为0，则返回正无穷
+    if train_X.shape[1] == 0:
+        return float("inf")
+
+    # 使用kfold交叉验证划分数据集
+    kf = KFold(n_splits=k, shuffle=True, random_state=42)
+    accuracy_list = []
+
+    # 计算每一折的错误率
+    for train_index, test_index in kf.split(train_X):
+        # 对于训练集和测试集采用k重交叉验证
+        X_train_kf, X_test_kf = train_X.iloc[train_index], train_X.iloc[test_index]
+        y_train_kf, y_test_kf = y.iloc[train_index], y.iloc[test_index]
+        if len(X_train_kf) < 5:
+            print(train_index)
+        knn.fit(X_train_kf, y_train_kf)  # 训练
+        y_pred = knn.predict(X_test_kf)  # 预测
+        accuracy_list.append(accuracy_score(y_test_kf, y_pred))  # 计算错误率
+
+    accuracy = np.mean(accuracy_list)  # 计算平均错误率
+    return accuracy
+
 # 编写CEC2017的测试函数
 def cec2017_F1(x):
     return np.sum(x**2)  # 返回x的平方和

@@ -35,6 +35,7 @@ class DE_SHADE:
         mcr_terminal: 控制参数，当M_CR小于mcr_terminal时停止，默认值为0.6
         max_FES: 最大评估次数，默认值为1000
         """
+        self.X_train,self.y_train=X,y
         self.size = size
         self.alpha = alpha
         self.beta = beta
@@ -47,7 +48,7 @@ class DE_SHADE:
         self.max_FES = max_FES
 
 
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)   
+        # self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)   
         self.dimension = X.shape[1]
         self.knn = KNeighborsClassifier(n_neighbors=5)
     
@@ -205,16 +206,8 @@ class DE_SHADE:
     def fit(self):
         self.init_solution()
         self.update()
-                
-        # 使用knn算法在测试集上进行测试
-        X_train = self.X_train.iloc[:,self.global_best==1]
-        X_test = self.X_test.iloc[:,self.global_best==1]
-        # 如果选择的特征数量为0，则返回0，否则返回在测试集上的准确率
-        if X_train.shape[1] == 0:
-            return 0
-        self.knn.fit(X_train, self.y_train)
-        y_pred = self.knn.predict(X_test)
-        self.accuracy = accuracy_score(self.y_test, y_pred)
+        # 计算准确率
+        self.accuracy = cal_accuracy(self.X_train,self.y_train,self.global_best,self.knn)
         self.t.set_postfix({"accuracy":f"{self.accuracy*100:.2f}%","solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
         self.t.close()
         return self.accuracy
