@@ -17,7 +17,7 @@ Dataset_list = [
     ("./data/spambase/spambase.data", 57, "spambase"),
 ]
 
-Alorithm_list = ["DE_DynamicF", "DE", "DE_JADE", "DE_SHADE"]
+Alorithm_list = ["DE_model","DE_DynamicF", "DE", "DE_JADE", "DE_SHADE"]
 
 # 运行所有的数据集和算法并输出表格
 def save_table():
