@@ -1,10 +1,10 @@
-'''
+"""
 Description: 
 Author: Zjy
 Date: 2025-03-03 23:45:26
-LastEditTime: 2025-03-16 16:22:22
+LastEditTime: 2025-03-20 17:27:12
 version: 1.0
-'''
+"""
 from module.utils import read_uci_data
 from module.FeatureSelect import *
 
@@ -17,12 +17,24 @@ Dataset_list = [
     ("./data/spambase/spambase.data", 57, "spambase"),
 ]
 
-Alorithm_list = ["DE_model","DE_DynamicF", "DE", "DE_JADE", "DE_SHADE"]
+Alorithm_list = [
+    "DE_model",
+    "DE_DynamicF",
+    "DE",
+    "DE_JADE",
+    "DE_SHADE",
+    "DE_LSHADE",
+    "DE_RL_LSHADE",
+    "BPSO",
+    "BPSO_OBL",
+    "GPU_DE",
+]
+
 
 # 运行所有的数据集和算法并输出表格
 def save_table():
     dataset_accuracy = []
-    col_index=[]
+    col_index = []
     for i in range(len(Dataset_list)):
         col_index.append(Dataset_list[i][2])
         X, y = read_uci_data(Dataset_list[i][0], Dataset_list[i][1])
@@ -35,11 +47,12 @@ def save_table():
 
 
 if __name__ == "__main__":
-    # save_table()
-    
-    d_index = 3 # 选择数据集
-    a_index = 0 # 选择算法
+    d_index = 1  # 选择数据集
+    a_index = 2  # 选择算法
     X, y = read_uci_data(Dataset_list[d_index][0], Dataset_list[d_index][1])
     fs = FeatureSelect(X, y, Dataset_list[d_index][2])
+    # fs.fit(Alorithm_list[-1], run_times=1)
     fs.fit(Alorithm_list[a_index], run_times=1)
-    fs.compare(algorithm_list=Alorithm_list, run_times=20)
+    # fs.compare(algorithm_list=Alorithm_list, run_times=20)
+    
+    # save_table()

@@ -35,7 +35,7 @@ class DE_SHADE:
         mcr_terminal: 控制参数，当M_CR小于mcr_terminal时停止，默认值为0.6
         max_FES: 最大评估次数，默认值为1000
         """
-        self.X_train,self.y_train=X,y
+        self.X_train, self.y_train = X, y
         self.size = size
         self.alpha = alpha
         self.beta = beta
@@ -47,16 +47,15 @@ class DE_SHADE:
         self.mcr_terminal = mcr_terminal
         self.max_FES = max_FES
 
-
-        # self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)   
+        # self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)
         self.dimension = X.shape[1]
         self.knn = KNeighborsClassifier(n_neighbors=5)
-    
+
     # 初始化种群
     def init_solution(self):
         self.F = -1
         self.CR = -1
-        self.P = np.zeros((self.size, self.dimension),dtype=int)  # 种群
+        self.P = np.zeros((self.size, self.dimension), dtype=int)  # 种群
         self.x = np.zeros((self.size, self.dimension))
         self.fitness_x = np.zeros(self.size)  # 个体历史最优适应度
         self.A = np.zeros((0, self.dimension))  # 存储被淘汰的父代个体
@@ -66,9 +65,9 @@ class DE_SHADE:
         self.M_CR = np.full(self.H, self.u_CR)  # 存储最近H次迭代的交叉概率
         self.FES = 0  # 评估次数
         self.global_best_fitness = float("inf")  # 全局最优适应度
-        self.global_best = np.zeros(self.dimension,dtype=int)  # 全局最优解
+        self.global_best = np.zeros(self.dimension, dtype=int)  # 全局最优解
         self.f_best = []
-        self.t=tqdm(total=self.max_FES,desc="DE_SHADE",bar_format=bar_format)
+        self.t = tqdm(total=self.max_FES, desc="DE_SHADE", bar_format=bar_format)
         for i in range(self.size):
             # 将x[i]初始化为0-1之间的随机数
             self.x[i] = np.random.rand(self.dimension)
@@ -88,7 +87,6 @@ class DE_SHADE:
             if f_new < self.global_best_fitness:
                 self.global_best = self.P[i]
                 self.global_best_fitness = f_new
-
 
     # 计算Lehmer均值
     def mean_lehmer(self, p=2):
@@ -127,12 +125,16 @@ class DE_SHADE:
         V = np.clip(V, 0, 1)
         return V
 
-    
     # 更新种群
     def update(self):
         while self.FES < self.max_FES:
-            self.t.set_postfix({"solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
-            for i in tqdm(range(self.size),desc="种群进化中",leave=False):
+            self.t.set_postfix(
+                {
+                    "solution": self.global_best[:16],
+                    "fitness": f"{self.global_best_fitness:.4f}",
+                }
+            )
+            for i in tqdm(range(self.size), desc="种群进化中", leave=False):
                 # 在[0,H)之间随机选择一个整数]
                 r_i = np.random.choice(self.H, 1)[0]
 
@@ -201,13 +203,19 @@ class DE_SHADE:
                         self.M_CR[i] = np.mean(self.S_CR)
                     self.M_F[i] = self.mean_lehmer()
 
-            
-
     def fit(self):
         self.init_solution()
         self.update()
         # 计算准确率
-        self.accuracy = cal_accuracy(self.X_train,self.y_train,self.global_best,self.knn)
-        self.t.set_postfix({"accuracy":f"{self.accuracy*100:.2f}%","solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+        self.accuracy = cal_accuracy(
+            self.X_train, self.y_train, self.global_best, self.knn
+        )
+        self.t.set_postfix(
+            {
+                "accuracy": f"{self.accuracy*100:.2f}%",
+                "solution": self.global_best[:16],
+                "fitness": f"{self.global_best_fitness:.4f}",
+            }
+        )
         self.t.close()
         return self.accuracy

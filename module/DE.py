@@ -25,7 +25,7 @@ class DE:
         CR: 交叉概率，默认值为0.5
         max_FES: 最大评估次数，默认值为1000
         """
-        self.X_train,self.y_train=X,y
+        self.X_train, self.y_train = X, y
         self.size = size
         self.alpha = alpha
         self.beta = beta
@@ -35,25 +35,18 @@ class DE:
 
         # self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)
         self.dimension = X.shape[1]
-        self.population = np.zeros((self.size, self.dimension)).astype(int)
-        self.x = np.zeros((self.size, self.dimension))
-        self.fitness_x = np.zeros(self.size)
-        self.FES = 0
-        self.global_best_fitness = float("inf")
-        self.global_best = np.zeros(self.dimension).astype(int)
-        self.f_best = []
         self.knn = KNeighborsClassifier(n_neighbors=5)
 
     # 初始化种群
     def init_solution(self):
-        self.population = np.zeros((self.size, self.dimension),dtype=int)
+        self.population = np.zeros((self.size, self.dimension), dtype=int)
         self.x = np.zeros((self.size, self.dimension))
         self.fitness_x = np.zeros(self.size)
         self.FES = 0
         self.global_best_fitness = float("inf")
-        self.global_best = np.zeros(self.dimension,dtype=int)
+        self.global_best = np.zeros(self.dimension, dtype=int)
         self.f_best = []
-        self.t=tqdm(total=self.max_FES,desc="DE",bar_format=bar_format)
+        self.t = tqdm(total=self.max_FES, desc="DE", bar_format=bar_format)
         for i in range(self.size):
             # 将x[i]初始化为0-1之间的随机数
             self.x[i] = np.random.rand(self.dimension)
@@ -79,7 +72,7 @@ class DE:
         # 从种群中随机选择三个不同的个体
         x_set = set()
         x_set.add(i)
-        r = np.zeros(3,dtype=int)
+        r = np.zeros(3, dtype=int)
         for j in range(3):
             r[j] = np.random.choice(self.size, 1)[0]
             while r[j] in x_set:
@@ -88,13 +81,18 @@ class DE:
 
         V = self.x[r[0]] + self.F * (self.x[r[1]] - self.x[r[2]])
         V = np.clip(V, 0, 1)
-        return V    
+        return V
 
     # 更新种群
     def update(self):
         while self.FES < self.max_FES:
-            self.t.set_postfix({"solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
-            for i in tqdm(range(self.size),desc="种群进化中",leave=False):
+            self.t.set_postfix(
+                {
+                    "solution": self.global_best[:16],
+                    "fitness": f"{self.global_best_fitness:.4f}",
+                }
+            )
+            for i in tqdm(range(self.size), desc="种群进化中", leave=False):
                 # 选择不同变异策略
                 V = self.F_rand_1(i)
 
@@ -132,7 +130,15 @@ class DE:
         self.init_solution()
         self.update()
         # 计算准确率
-        self.accuracy = cal_accuracy(self.X_train,self.y_train,self.global_best,self.knn)
-        self.t.set_postfix({"accuracy":f"{self.accuracy*100:.2f}%","solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+        self.accuracy = cal_accuracy(
+            self.X_train, self.y_train, self.global_best, self.knn
+        )
+        self.t.set_postfix(
+            {
+                "accuracy": f"{self.accuracy*100:.2f}%",
+                "solution": self.global_best[:16],
+                "fitness": f"{self.global_best_fitness:.4f}",
+            }
+        )
         self.t.close()
         return self.accuracy

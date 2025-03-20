@@ -30,7 +30,7 @@ class DE_JADE:
         p: 控制参数，用来选择前p%的个体，默认值为0.05
         max_FES: 最大评估次数，默认值为1000
         """
-        self.X_train,self.y_train=X,y
+        self.X_train, self.y_train = X, y
         self.size = size
         self.alpha = alpha
         self.beta = beta
@@ -40,16 +40,15 @@ class DE_JADE:
         self.p = p
         self.max_FES = max_FES
 
-
         # self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)
         self.dimension = X.shape[1]
         self.knn = KNeighborsClassifier(n_neighbors=5)
-    
+
     # 初始化种群
     def init_solution(self):
         self.F = -1
         self.CR = -1
-        self.P = np.zeros((self.size, self.dimension),dtype=int)  # 种群
+        self.P = np.zeros((self.size, self.dimension), dtype=int)  # 种群
         self.x = np.zeros((self.size, self.dimension))
         self.fitness_x = np.zeros(self.size)  # 个体历史最优适应度
         self.A = np.zeros((0, self.dimension))  # 存储被淘汰的父代个体
@@ -57,9 +56,9 @@ class DE_JADE:
         self.S_CR = np.zeros(0)  # 存储成功替换父代的交叉概率
         self.FES = 0  # 评估次数
         self.global_best_fitness = float("inf")  # 全局最优适应度
-        self.global_best = np.zeros(self.dimension,dtype=int)  # 全局最优解
+        self.global_best = np.zeros(self.dimension, dtype=int)  # 全局最优解
         self.f_best = []
-        self.t=tqdm(total=self.max_FES,desc="DE_JADE",bar_format=bar_format)
+        self.t = tqdm(total=self.max_FES, desc="DE_JADE", bar_format=bar_format)
         for i in range(self.size):
             # 将x[i]初始化为0-1之间的随机数
             self.x[i] = np.random.rand(self.dimension)
@@ -127,8 +126,13 @@ class DE_JADE:
     # 更新种群
     def update(self):
         while self.FES < self.max_FES:
-            self.t.set_postfix({"solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
-            for i in tqdm(range(self.size),desc="种群进化中",leave=False):
+            self.t.set_postfix(
+                {
+                    "solution": self.global_best[:16],
+                    "fitness": f"{self.global_best_fitness:.4f}",
+                }
+            )
+            for i in tqdm(range(self.size), desc="种群进化中", leave=False):
                 # 初始化缩放因子F和交叉概率CR
                 self.F = cauchy.rvs(loc=0.5, scale=0.1, size=1)[0]  # 从柯西分布中生成F
                 self.CR = np.random.normal(self.u_CR, 0.1, 1)[0]  # 从正态分布中生成CR
@@ -166,7 +170,7 @@ class DE_JADE:
                     self.fitness_x[i] = f_u
                     self.S_F = np.append(self.S_F, self.F)
                     self.S_CR = np.append(self.S_CR, self.CR)
-                    
+
                     if len(self.A) > self.size:
                         self.A = np.delete(
                             self.A, np.random.randint(0, len(self.A), 1), axis=0
@@ -191,13 +195,20 @@ class DE_JADE:
             self.u_F = (
                 1 - self.c
             ) * self.u_F + self.c * self.mean_lehmer()  # 如果c不为0，则利用成功替换父代的F的lehmer均值来更新u_F
-            
 
     def fit(self):
         self.init_solution()
         self.update()
         # 计算准确率
-        self.accuracy = cal_accuracy(self.X_train,self.y_train,self.global_best,self.knn)
-        self.t.set_postfix({"accuracy":f"{self.accuracy*100:.2f}%","solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+        self.accuracy = cal_accuracy(
+            self.X_train, self.y_train, self.global_best, self.knn
+        )
+        self.t.set_postfix(
+            {
+                "accuracy": f"{self.accuracy*100:.2f}%",
+                "solution": self.global_best[:16],
+                "fitness": f"{self.global_best_fitness:.4f}",
+            }
+        )
         self.t.close()
         return self.accuracy

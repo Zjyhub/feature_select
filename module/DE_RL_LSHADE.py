@@ -41,7 +41,7 @@ class DE_RL_LSHADE:
         alpha_lr: 控制参数，用来更新Q表的参数，默认值为0.1
         max_FES: 最大评估次数，默认值为1000
         """
-        self.X_train,self.y_train=X,y
+        self.X_train, self.y_train = X, y
         self.size = init_size
         self.init_size = init_size
         self.min_size = min_size
@@ -60,13 +60,13 @@ class DE_RL_LSHADE:
         # self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)
         self.dimension = X.shape[1]
         self.knn = KNeighborsClassifier(n_neighbors=5)
-        
+
     # 初始化种群
     def init_solution(self):
         self.size = self.init_size
         self.F = -1
         self.CR = -1
-        self.P = np.zeros((self.size, self.dimension),dtype=int)  # 种群
+        self.P = np.zeros((self.size, self.dimension), dtype=int)  # 种群
         self.x = np.zeros((self.size, self.dimension))
         self.pbest = np.zeros((self.size, self.dimension))  # 个体历史最优位置
         self.fitness_x = np.zeros(self.size)  # 个体历史最优适应度
@@ -77,11 +77,13 @@ class DE_RL_LSHADE:
         self.M_CR = np.full(self.H, self.u_CR)  # 存储最近H次迭代的交叉概率
         self.FES = 0  # 评估次数
         self.global_best_fitness = float("inf")  # 全局最优适应度
-        self.global_best = np.zeros(self.dimension,dtype=int)  # 全局最优解
+        self.global_best = np.zeros(self.dimension, dtype=int)  # 全局最优解
         self.f_best = []  # 存储全局最优适应度值
-        self.State = np.zeros(self.size,dtype=int)  # 记录每个个体的状态，0表示当前个体优于之前的父代，1表示当前个体劣于之前的父代
-        self.Q_table = np.zeros((self.size,2, 7))  # Q表, 2个状态，7个动作，每个个体有一个Q表
-        self.t=tqdm(total=self.max_FES,desc="DE_RL_LSHADE",bar_format=bar_format)
+        self.State = np.zeros(
+            self.size, dtype=int
+        )  # 记录每个个体的状态，0表示当前个体优于之前的父代，1表示当前个体劣于之前的父代
+        self.Q_table = np.zeros((self.size, 2, 7))  # Q表, 2个状态，7个动作，每个个体有一个Q表
+        self.t = tqdm(total=self.max_FES, desc="DE_RL_LSHADE", bar_format=bar_format)
         for i in range(self.size):
             # 将x[i]初始化为0-1之间的随机数
             self.x[i] = np.random.rand(self.dimension)
@@ -126,7 +128,7 @@ class DE_RL_LSHADE:
         # 从种群中随机选择三个不同的个体
         x_set = set()
         x_set.add(i)
-        r = np.zeros(3,dtype=int)
+        r = np.zeros(3, dtype=int)
         for j in range(3):
             r[j] = np.random.choice(self.size, 1)[0]
             while r[j] in x_set:
@@ -142,7 +144,7 @@ class DE_RL_LSHADE:
         # 从种群中随机选择五个不同
         x_set = set()
         x_set.add(i)
-        r = np.zeros(5,dtype=int)
+        r = np.zeros(5, dtype=int)
         for j in range(5):
             r[j] = np.random.choice(self.size, 1)[0]
             while r[j] in x_set:
@@ -165,7 +167,7 @@ class DE_RL_LSHADE:
         x_set = set()
         x_set.add(i)
         x_set.add(best)
-        r = np.zeros(2,dtype=int)
+        r = np.zeros(2, dtype=int)
         for j in range(2):
             r[j] = np.random.choice(self.size, 1)[0]
             while r[j] in x_set:
@@ -183,7 +185,7 @@ class DE_RL_LSHADE:
         x_set = set()
         x_set.add(i)
         x_set.add(best)
-        r = np.zeros(4,dtype=int)
+        r = np.zeros(4, dtype=int)
         for j in range(4):
             r[j] = np.random.choice(self.size, 1)[0]
             while r[j] in x_set:
@@ -203,7 +205,7 @@ class DE_RL_LSHADE:
         # 选择三个不同的个体
         x_set = set()
         x_set.add(i)
-        r = np.zeros(3,dtype=int)
+        r = np.zeros(3, dtype=int)
         for j in range(3):
             r[j] = np.random.choice(self.size, 1)[0]
             while r[j] in x_set:
@@ -224,7 +226,7 @@ class DE_RL_LSHADE:
         best = np.argmin(self.fitness_x)
         x_set = set()
         x_set.add(i)
-        r = np.zeros(2,dtype=int)
+        r = np.zeros(2, dtype=int)
         for j in range(2):
             r[j] = np.random.choice(self.size, 1)[0]
             while r[j] in x_set:
@@ -296,9 +298,7 @@ class DE_RL_LSHADE:
             self.x = np.delete(self.x, sorted_index[num_to_remove:], axis=0)
             self.Q_table = np.delete(self.Q_table, sorted_index[num_to_remove:], axis=0)
             self.State = np.delete(self.State, sorted_index[num_to_remove:])
-            self.fitness_x = np.delete(
-                self.fitness_x, sorted_index[num_to_remove:]
-            )
+            self.fitness_x = np.delete(self.fitness_x, sorted_index[num_to_remove:])
             self.size += num_to_remove
             len_A = int(self.size * self.r_arc)
             if len(self.A) > len_A:
@@ -308,13 +308,16 @@ class DE_RL_LSHADE:
                     axis=0,
                 )
 
-    
-
     # 更新种群
     def update(self):
         while self.FES < self.max_FES:
-            self.t.set_postfix({"solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
-            for i in tqdm(range(self.size),desc="种群进化中",leave=False):
+            self.t.set_postfix(
+                {
+                    "solution": self.global_best[:16],
+                    "fitness": f"{self.global_best_fitness:.4f}",
+                }
+            )
+            for i in tqdm(range(self.size), desc="种群进化中", leave=False):
                 # 在[0,H)之间随机选择一个整数
                 r_i = np.random.choice(self.H, 1)[0]
 
@@ -406,13 +409,19 @@ class DE_RL_LSHADE:
                         self.M_CR[i] = np.mean(self.S_CR)
                     self.M_F[i] = self.mean_lehmer()
 
-            
-
     def fit(self):
         self.init_solution()
         self.update()
         # 计算准确率
-        self.accuracy = cal_accuracy(self.X_train,self.y_train,self.global_best,self.knn)
-        self.t.set_postfix({"accuracy":f"{self.accuracy*100:.2f}%","solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+        self.accuracy = cal_accuracy(
+            self.X_train, self.y_train, self.global_best, self.knn
+        )
+        self.t.set_postfix(
+            {
+                "accuracy": f"{self.accuracy*100:.2f}%",
+                "solution": self.global_best[:16],
+                "fitness": f"{self.global_best_fitness:.4f}",
+            }
+        )
         self.t.close()
         return self.accuracy

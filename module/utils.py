@@ -54,12 +54,9 @@ def fitness(alpha, beta, dimension, train_X, y, x, knn, k=10):
     if train_X.shape[1] == 0:
         return float("inf")
 
-    # 随机选择数据集的70%作为训练集，30%作为测试集
-    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
     # 使用kfold交叉验证划分数据集
     kf = KFold(n_splits=k, shuffle=True, random_state=42)
-    err_rates = []
+    err_rates = np.zeros(0)
 
     # 计算每一折的错误率
     for train_index, test_index in kf.split(train_X):

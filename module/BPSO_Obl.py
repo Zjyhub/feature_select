@@ -38,7 +38,7 @@ class BPSO_OBL:
         max_FES: 最大评估次数，默认值为1000
         if_obl: 是否使用反转解，默认值为False
         """
-        self.X_train,self.y_train=X,y
+        self.X_train, self.y_train = X, y
         self.size = size
         self.v_high = v_high
         self.alpha = alpha
@@ -57,18 +57,17 @@ class BPSO_OBL:
 
     # 初始化粒子群
     def init_solution(self):
-        self.x = np.zeros((self.size, self.dimension),dtype=int) # 使用一个二维数组来存储粒子群的位置
+        self.x = np.zeros((self.size, self.dimension), dtype=int)  # 使用一个二维数组来存储粒子群的位置
         self.p_best = np.zeros(
-            (self.size, self.dimension),
-            dtype=int
+            (self.size, self.dimension), dtype=int
         )  # 使用一个二维数组来存储粒子群中每个粒子的历史最佳位置
-        self.global_best = np.zeros(self.dimension,dtype=int)  # 使用一个一维数组来存储粒子群的全局最佳位置
+        self.global_best = np.zeros(self.dimension, dtype=int)  # 使用一个一维数组来存储粒子群的全局最佳位置
         self.v = np.zeros((self.size, self.dimension))  # 使用一个二维数组来存储粒子群的速度
         self.global_best_fitness = float("inf")  # 粒子群的全局最佳适应度初始化为正无穷
         self.p_best_fitness = np.zeros(self.size)  # 使用一个一维数组来存储粒子群中每个粒子的历史最佳适应度
         self.f_best = []  # 存储每次迭代的全局最优适应度值
-        self.FES=0
-        self.t=tqdm(total=self.max_FES,desc="BPSO_OBL",bar_format=bar_format)
+        self.FES = 0
+        self.t = tqdm(total=self.max_FES, desc="BPSO_OBL", bar_format=bar_format)
         for i in range(self.size):
             # 初始化粒子群的位置和速度,位置初始化为一个随机的二进制向量,速度初始化为一个随机的向量
             self.x[i] = np.random.choice([0, 1], self.dimension)  # 随机生成一个二进制向量
@@ -91,12 +90,17 @@ class BPSO_OBL:
 
     # 粒子群更新
     def update(self):
-        while self.FES<self.max_FES:
-            self.t.set_postfix({"solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+        while self.FES < self.max_FES:
+            self.t.set_postfix(
+                {
+                    "solution": self.global_best[:16],
+                    "fitness": f"{self.global_best_fitness:.4f}",
+                }
+            )
             # 更新惯性权重
             self.w = self.w_max - (self.w_max - self.w_min) * self.FES / self.max_FES
             # 遍历每个粒子，更新每个粒子的位置和速度
-            for i in tqdm(range(self.size),desc="种群进化中",leave=False):
+            for i in tqdm(range(self.size), desc="种群进化中", leave=False):
                 # 更新当前粒子的速度
                 self.v[i] = (
                     self.w * self.v[i]
@@ -129,7 +133,7 @@ class BPSO_OBL:
                     self.x[i],
                     self.knn,
                 )  # 计算当前粒子的适应度函数值
-                self.FES+=1
+                self.FES += 1
                 self.t.update(1)
                 self.f_best.append(self.global_best_fitness)
 
@@ -144,9 +148,8 @@ class BPSO_OBL:
                     obl_x,
                     self.knn,
                 )  # 计算反转解的适应度函数值
-                self.FES+=1
+                self.FES += 1
                 self.t.update(1)
-                
 
                 # 如果反转解的适应度函数值更优，则更新当前位置为反转解
                 if f_obl < f_new:
@@ -163,18 +166,25 @@ class BPSO_OBL:
                     self.global_best = self.p_best[i]
                     self.global_best_fitness = f_new
 
-                self.f_best.append(self.global_best_fitness)    
+                self.f_best.append(self.global_best_fitness)
                 # 如果评估次数超过最大评估次数，则停止迭代
                 if self.FES >= self.max_FES:
                     return
-
 
     # 训练模型,返回全局最优位置
     def fit(self):
         self.init_solution()  # 初始化粒子群
         self.update()  # 粒子群更新
         # 计算准确率
-        self.accuracy = cal_accuracy(self.X_train,self.y_train,self.global_best,self.knn)
-        self.t.set_postfix({"accuracy":f"{self.accuracy*100:.2f}%","solution":self.global_best[:16],"fitness":f"{self.global_best_fitness:.4f}"})
+        self.accuracy = cal_accuracy(
+            self.X_train, self.y_train, self.global_best, self.knn
+        )
+        self.t.set_postfix(
+            {
+                "accuracy": f"{self.accuracy*100:.2f}%",
+                "solution": self.global_best[:16],
+                "fitness": f"{self.global_best_fitness:.4f}",
+            }
+        )
         self.t.close()
         return self.accuracy
