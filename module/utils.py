@@ -34,7 +34,7 @@ def obl(x):
     return 1 - x
 
 
-def fitness(alpha, beta, dimension, train_X, y, x, knn, k=10):
+def fitness(alpha, beta, dimension, train_X, y, x, knn, k=5):
     """
     计算适应度函数值
 
@@ -56,7 +56,7 @@ def fitness(alpha, beta, dimension, train_X, y, x, knn, k=10):
 
     # 使用kfold交叉验证划分数据集
     kf = KFold(n_splits=k, shuffle=True, random_state=42)
-    err_rates = np.zeros(0)
+    err_rates = []
 
     # 计算每一折的错误率
     for train_index, test_index in kf.split(train_X):
