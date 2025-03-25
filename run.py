@@ -18,8 +18,8 @@ Dataset_list = [
 ]
 
 Alorithm_list = [
-    "DE_model",
     "DE_DynamicF",
+    "DE_model",
     "DE",
     "DE_JADE",
     "DE_SHADE",
@@ -27,7 +27,6 @@ Alorithm_list = [
     "DE_RL_LSHADE",
     "BPSO",
     "BPSO_OBL",
-    "GPU_DE",
 ]
 
 
@@ -47,12 +46,12 @@ def save_table():
 
 
 if __name__ == "__main__":
-    d_index = 1  # 选择数据集
-    a_index = 2  # 选择算法
-    X, y = read_uci_data(Dataset_list[d_index][0], Dataset_list[d_index][1])
-    fs = FeatureSelect(X, y, Dataset_list[d_index][2])
+    # d_index = 1  # 选择数据集
+    # a_index = 0  # 选择算法
+    # X, y = read_uci_data(Dataset_list[d_index][0], Dataset_list[d_index][1])
+    # fs = FeatureSelect(X, y, Dataset_list[d_index][2])
     # fs.fit(Alorithm_list[-1], run_times=1)
-    fs.fit(Alorithm_list[a_index], run_times=1)
+    # fs.fit(Alorithm_list[a_index], run_times=1)
     # fs.compare(algorithm_list=Alorithm_list, run_times=20)
     
-    # save_table()
+    save_table()

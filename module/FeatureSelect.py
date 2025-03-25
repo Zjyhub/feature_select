@@ -117,13 +117,13 @@ class FeatureSelect:
 
         for i in range(len(algorithm_list)):
             mean_accuracy, _, _, f_list = self.fit(
-                algorithm_list[i], run_times, False, False
+                algorithm_list[i], run_times,True,False
             )
             accuracy_list.append(mean_accuracy)
             median = np.median(f_list, axis=0)
             sample_interval = 20
             median = median[::sample_interval]
-            plt.plot(median, label=algorithm_list[i])
+            plt.plot(median, label=algorithm_list[i],marker='o')
 
         # 根据accuracy_list平均准确率，并找到最优解
         sorted_index = np.argsort(accuracy_list)[::-1]

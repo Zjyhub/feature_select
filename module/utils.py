@@ -1,12 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import warnings
 import os
 import time
 from tqdm import tqdm
 from datetime import datetime
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import accuracy_score
+from sklearn.exceptions import ConvergenceWarning
+
+warnings.filterwarnings("ignore", category=ConvergenceWarning)  # 忽略收敛警告
 
 bar_format = '{desc}: {n}/{total} {elapsed} [{remaining},{rate_fmt}] {postfix} {percentage:3.1f}% |{bar}|'
 
@@ -83,7 +87,7 @@ def save_result(algorithm_name, accuracy_mean, best_solution, best_accuracy, run
 
         with open(f"./output/{algorithm_name}/result/{algorithm_name}_{Dataset}.txt", "a") as f:
             date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            f.write(f"[{date}] {algorithm_name} run {run_times} times , mean accuracy: {accuracy_mean*100:.2f}%, best solution: {best_solution}, best accuracy: {best_accuracy:.2f}%\n")
+            f.write(f"[{date}] {algorithm_name} run {run_times} times , mean accuracy: {accuracy_mean*100:.2f}%, best solution: {best_solution}, best accuracy: {best_accuracy:.2f}%, number of selected features: {best_solution.sum()}/{best_solution.size}\n")
 
 # 保存图像
 def save_figure(algorithm_name, f_list, run_times, Dataset):
@@ -93,7 +97,7 @@ def save_figure(algorithm_name, f_list, run_times, Dataset):
         os.makedirs(f"./output/{algorithm_name}/figure")
     median = np.median(f_list, axis=0)
 
-    sample_interval = 20
+    sample_interval = global_params["size"]
     median = median[::sample_interval]
     plt.plot(median, label=algorithm_name,marker='o')
     plt.xlabel("iteration")

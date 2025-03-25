@@ -203,6 +203,13 @@ class DE_JADE:
         self.accuracy = cal_accuracy(
             self.X_train, self.y_train, self.global_best, self.knn
         )
+
+        # 将成功替换父代的F和CR保存到文件
+        with open(f"./output/success_F_CR.txt", "a") as f:
+            f.write(f"DE_JADE:\n")
+            f.write(f"success_F: {self.S_F}\n")
+            f.write(f"success_CR: {self.S_CR}\n")
+
         self.t.set_postfix(
             {
                 "accuracy": f"{self.accuracy*100:.2f}%",

@@ -4,7 +4,7 @@ from module.utils import *
 import numpy as np
 
 
-class DE_DynamicF:
+class DE_DynamicF_2:
     def __init__(
         self,
         X,
@@ -48,9 +48,9 @@ class DE_DynamicF:
         """根据特征权重动态更新F值矩阵"""
         for d in range(self.dimension):
             if self.feature_weights[d] > 0.7:
-                self.F_matrix[:, d] = 0.5
+                self.F_matrix[:, d] = np.random.uniform(0.4,0.6, self.size)
             elif 0.3 <= self.feature_weights[d] <= 0.7:
-                self.F_matrix[:, d] = 1.2
+                self.F_matrix[:, d] = np.random.uniform(1.0,1.4, self.size)
             else:
                 self.F_matrix[:, d] = 0.0
 
