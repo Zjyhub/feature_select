@@ -8,6 +8,9 @@ from module.DE_LSHADE import *
 from module.DE_RL_LSHADE import *
 from module.DE_DynamicF import *
 from module.DE_model import *
+from module.DE_DynamicF_2 import *
+from module.DE_RL import *
+from module.DE_best_2 import *
 from matplotlib import pyplot as plt
 
 
@@ -21,6 +24,9 @@ algorithms = [
     "DE_RL_LSHADE",
     "DE_DynamicF",
     "DE_model",
+    "DE_DynamicF_2",
+    "DE_RL",
+    "DE_best_2",
 ]
 
 
@@ -50,6 +56,9 @@ class FeatureSelect:
             "DE_RL_LSHADE": DE_RL_LSHADE(self.X, self.y),
             "DE_DynamicF": DE_DynamicF(self.X, self.y),
             "DE_model": DE_model(self.X, self.y),
+            "DE_DynamicF_2": DE_DynamicF_2(self.X, self.y),
+            "DE_RL": DE_RL(self.X, self.y),
+            "DE_best_2": DE_best_2(self.X, self.y),
         }
 
     def choose_algorithm(self, algorithm_name):
