@@ -16,7 +16,6 @@ class DE_LSHADE(Base):
         H=5,
         r_arc=2.0,
         mcr_terminal=0.6,
-        max_FES=global_params["max_FES"],
     ):
         """
         初始化DE算法对象
@@ -32,7 +31,7 @@ class DE_LSHADE(Base):
         r_arc: 控制参数，控制被淘汰的父代个体的数量为r_arc*size，默认值为2
         mcr_terminal: 控制参数，当M_CR小于mcr_terminal时停止，默认值为0.6
         """
-        super().__init__(X, y, size=init_size, max_FES=max_FES, algorithm="DE_LSHADE")
+        super().__init__(X, y, algorithm="DE_LSHADE")
         self.init_size = init_size
         self.min_size = min_size
         self.u_F = u_F

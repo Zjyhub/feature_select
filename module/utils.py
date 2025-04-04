@@ -130,6 +130,7 @@ def save_figure(algorithm_name, f_list, run_times, Dataset):
     plt.legend()
     plt.title(f"{algorithm_name} run {run_times} times")
     plt.savefig(f"./output/{algorithm_name}/figure/{algorithm_name}_{Dataset}.png")
+    plt.close()  # 关闭图像，释放内存
 
 
 # 根据传入路径读取数据，返回特征矩阵X和目标类别标签y
@@ -186,8 +187,3 @@ def cal_accuracy(train_X, y, x, knn=global_params["knn"], k=5):
 
     accuracy = np.mean(accuracy_list)  # 计算平均错误率
     return accuracy
-
-
-# 编写CEC2017的测试函数
-def cec2017_F1(x):
-    return np.sum(x**2)  # 返回x的平方和

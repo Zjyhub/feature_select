@@ -8,14 +8,12 @@ class DE_SHADE(Base):
         self,
         X,
         y,
-        size=global_params["size"],
         u_F=0.5,
         u_CR=0.5,
         p=0.1,
         H=5,
         r_arc=2,
         mcr_terminal=0.6,
-        max_FES=global_params["max_FES"],
     ):
         """
         初始化DE算法对象
@@ -28,14 +26,13 @@ class DE_SHADE(Base):
         r_arc: 控制参数，控制被淘汰的父代个体的数量为r_arc*size，默认值为2
         mcr_terminal: 控制参数，当M_CR小于mcr_terminal时停止，默认值为0.6
         """
-        super().__init__(X, y, size, max_FES=max_FES, algorithm="DE_SHADE")
+        super().__init__(X, y, algorithm="DE_SHADE")
         self.u_F = u_F
         self.u_CR = u_CR
         self.p = p
         self.H = H
         self.r_arc = r_arc
         self.mcr_terminal = mcr_terminal
-        self.max_FES = max_FES
 
     # 初始化种群
     def init_solution(self):

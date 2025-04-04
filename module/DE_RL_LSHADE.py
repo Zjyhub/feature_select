@@ -18,7 +18,6 @@ class DE_RL_LSHADE(Base):
         mcr_terminal=0.6,
         gamma=0.9,
         alpha_lr=0.1,
-        max_FES=global_params["max_FES"],
     ):
         """
         初始化DE算法对象
@@ -37,9 +36,7 @@ class DE_RL_LSHADE(Base):
         state_num: 状态数，0表示当前个体优于之前的父代，1表示当前个体劣于之前的父代
         strategies: 策略数
         """
-        super().__init__(
-            X, y, size=init_size, max_FES=max_FES, algorithm="DE_RL_LSHADE"
-        )
+        super().__init__(X, y, algorithm="DE_RL_LSHADE")
 
         self.init_size = init_size
         self.min_size = min_size

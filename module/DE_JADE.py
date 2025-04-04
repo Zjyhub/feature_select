@@ -8,12 +8,10 @@ class DE_JADE(Base):
         self,
         X,
         y,
-        size=global_params["size"],
         u_F=0.5,
         u_CR=0.5,
         c=0.2,
         p=0.05,
-        max_FES=global_params["max_FES"],
     ):
         """
         初始化DE算法对象
@@ -24,7 +22,7 @@ class DE_JADE(Base):
         c: 控制参数，用来更新u_F和u_CR，默认值为0.2
         p: 控制参数，用来选择前p%的个体，默认值为0.05
         """
-        super().__init__(X, y, size, max_FES=max_FES, algorithm="DE_JADE")
+        super().__init__(X, y, algorithm="DE_JADE")
         self.u_F = u_F
         self.u_CR = u_CR
         self.c = c

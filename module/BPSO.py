@@ -7,7 +7,6 @@ class BPSO(Base):
         self,
         X,
         y,
-        size=global_params["size"],
         v_high=6,
         c1=2.0,
         c2=2.0,
@@ -15,7 +14,6 @@ class BPSO(Base):
         w=1,
         w_max=0.9,
         w_min=0.4,
-        max_FES=global_params["max_FES"],
     ):
         """
         初始化BPSO算法对象
@@ -29,7 +27,7 @@ class BPSO(Base):
         w_max: 惯性权重最大值，默认值为0.9
         w_min: 惯性权重最小值，默认值为0.4
         """
-        super().__init__(X, y, size, max_FES=max_FES, algorithm="BPSO")
+        super().__init__(X, y, algorithm="BPSO")
         self.v_high = v_high
         self.c1 = c1
         self.c2 = c2
@@ -37,10 +35,6 @@ class BPSO(Base):
         self.w = w
         self.w_max = w_max
         self.w_min = w_min
-        self.max_FES = max_FES
-
-        self.dimension = X.shape[1]  # 特征数量
-        self.knn = global_params["knn"]  # 使用k为5的KNN分类器
 
     # 初始化粒子群
     def init_solution(self):

@@ -7,12 +7,8 @@ class DE_best_2(Base):
         self,
         X,
         y,
-        size=global_params["size"],
-        F=0.5,
-        CR=0.5,
-        max_FES=global_params["max_FES"],
     ):
-        super().__init__(X, y, size, F, CR, max_FES, algorithm="DE_best_2")
+        super().__init__(X, y, algorithm="DE_best_2")
 
     # 更新种群
     def update(self, i):

@@ -134,7 +134,7 @@ class FeatureSelect:
             feature_num_list.append(features)
             accuracy_list.append(mean_accuracy)
             median = np.median(f_list, axis=0)
-            sample_interval = 20
+            sample_interval = global_params["size"]
             median = median[::sample_interval]
             plt.plot(median, label=algorithm_list[i], marker="o")
 

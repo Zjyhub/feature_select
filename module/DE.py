@@ -7,12 +7,8 @@ class DE(Base):
         self,
         X,
         y,
-        size=global_params["size"],
-        F=0.5,
-        CR=0.5,
-        max_FES=global_params["max_FES"],
     ):
-        super().__init__(X, y, size, F, CR, max_FES, algorithm="DE")
+        super().__init__(X, y, algorithm="DE")
 
     # 更新第i个个体
     def update(self, i):

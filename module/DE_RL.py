@@ -7,12 +7,8 @@ class DE_RL(Base):
         self,
         X,
         y,
-        size=global_params["size"],
-        F=0.5,
-        CR=0.5,
         gamma=0.9,
         alpha_lr=0.1,
-        max_FES=global_params["max_FES"],
     ):
         """
         初始化DE算法对象
@@ -23,7 +19,7 @@ class DE_RL(Base):
         state_num: 状态数，0表示当前个体优于之前的父代，1表示当前个体劣于之前的父代
         strategies: 策略数
         """
-        super().__init__(X, y, size, F, CR, max_FES, algorithm="DE_RL")
+        super().__init__(X, y, algorithm="DE_RL")
         self.gamma = gamma
         self.alpha_lr = alpha_lr
         self.state_num = 2

@@ -1,66 +1,27 @@
 from sklearn.feature_selection import mutual_info_classif
 from module.utils import *
-import numpy as np
+from module.Base import Base
 
 
-class DE_DynamicF:
+class DE_DynamicF(Base):
     def __init__(
         self,
         X,
         y,
-        size=global_params["size"],
-        alpha=global_params["alpha"],
-        beta=global_params["beta"],
-        CR=0.5,  # 移除固定F参数
-        max_FES=global_params["max_FES"],
     ):
-        self.X_train, self.y_train = X, y
-        self.size = size
-        self.alpha = alpha
-        self.beta = beta
-        self.CR = CR
-        self.max_FES = max_FES
-
-        # self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-        self.dimension = X.shape[1]
-        self.knn = global_params["knn"]
+        super().__init__(X, y, algorithm="DE_DynamicF")
 
     def init_solution(self):
-        self.population = np.zeros((self.size, self.dimension), dtype=int)
-        self.x = np.zeros((self.size, self.dimension))
-        self.fitness_x = np.zeros(self.size)
-        self.FES = 0
-        self.global_best_fitness = float("inf")
-        self.global_best = np.zeros(self.dimension, dtype=int)
-        self.f_best = np.zeros(self.max_FES)
+        super().init_solution()
         # 新增特征权重计算
-        self.feature_weights = mutual_info_classif(self.X_train, self.y_train)
+        self.feature_weights = mutual_info_classif(self.X, self.y)
         # 归一化处理
         self.feature_weights = (self.feature_weights - self.feature_weights.min()) / (
             self.feature_weights.max() - self.feature_weights.min() + 1e-8
         )
-
         # 初始化动态F值矩阵
         self.F_matrix = np.zeros((self.size, self.dimension))
         self.update_F_matrix()
-        self.t = tqdm(total=self.max_FES, desc="DE_DynamicF", bar_format=bar_format)
-
-        for i in range(self.size):
-            self.x[i] = np.random.rand(self.dimension)
-            self.population[i] = (self.x[i] > 0.5).astype(int)
-            f_new = fitness(
-                self.alpha,
-                self.beta,
-                self.dimension,
-                self.X_train,
-                self.y_train,
-                self.population[i],
-                self.knn,
-            )
-            self.fitness_x[i] = f_new
-            if f_new < self.global_best_fitness:
-                self.global_best = self.population[i]
-                self.global_best_fitness = f_new
 
     def update_F_matrix(self):
         """根据特征权重动态更新F值矩阵"""
@@ -74,15 +35,15 @@ class DE_DynamicF:
 
     def similarity_selection(self, current_index):
         """相似性导向的基向量选择"""
-        current_vector = self.population[current_index]
+        current_vector = self.P[current_index]
         similarities = []
 
         # 计算相似性得分
         for i in range(self.size):
             if i == current_index:
                 continue
-            intersection = np.sum(current_vector & self.population[i])
-            union = np.sum(current_vector | self.population[i])
+            intersection = np.sum(current_vector & self.P[i])
+            union = np.sum(current_vector | self.P[i])
             similarities.append(intersection / (union + 1e-8))
 
         # 轮盘赌选择
@@ -103,75 +64,38 @@ class DE_DynamicF:
         )
 
         # 应用动态F值
-        delta = self.F_matrix[i] * (self.global_best - self.x[r2])
+        delta = self.F_matrix[i] * (self.x[r1] - self.x[r2])
         V = x_base + delta
         return np.clip(V, 0, 1)
 
-    def update(self):
-        while self.FES < self.max_FES:
-            self.t.set_postfix(
-                {
-                    "solution": self.global_best[:16],
-                    "fitness": f"{self.global_best_fitness:.4f}",
-                }
-            )
+    def update(self, i):
+        V = self.dynamic_mutation(i)
+        U = self.x[i].copy()
 
-            # 每10代更新一次F值矩阵
-            if self.FES % (10 * self.size) == 0:
-                self.update_F_matrix()
+        # 维度级交叉操作
+        for d in range(self.dimension):
+            # 对于F=0的维度直接保留原值
+            if self.F_matrix[i, d] == 0:
+                U[d] = self.x[i, d]
+            elif np.random.rand() < self.CR:
+                U[d] = V[d]
 
-            for i in tqdm(range(self.size), desc="种群进化中", leave=False):
-                V = self.dynamic_mutation(i)
-                U = self.x[i].copy()
-
-                # 维度级交叉操作
-                for d in range(self.dimension):
-                    # 对于F=0的维度直接保留原值
-                    if self.F_matrix[i, d] == 0:
-                        U[d] = self.x[i, d]
-                    elif np.random.rand() < self.CR:
-                        U[d] = V[d]
-
-                population_U = (U > 0.5).astype(int)
-                f_u = fitness(
-                    self.alpha,
-                    self.beta,
-                    self.dimension,
-                    self.X_train,
-                    self.y_train,
-                    population_U,
-                    self.knn,
-                )
-
-                if f_u < self.fitness_x[i]:
-                    self.x[i] = U
-                    self.fitness_x[i] = f_u
-                    self.population[i] = population_U
-                    if f_u < self.global_best_fitness:
-                        self.global_best = population_U
-                        self.global_best_fitness = f_u
-
-                self.f_best[self.FES] = self.global_best_fitness
-                self.FES += 1
-                self.t.update(1)
-                # 记录中间出现的fitness值
-                if self.FES >= self.max_FES:
-                    return
-
-    def fit(self):
-        self.init_solution()
-        self.update()
-        # 计算准确率
-        self.accuracy = cal_accuracy(
-            self.X_train, self.y_train, self.global_best, self.knn
+        population_U = (U > 0.5).astype(int)
+        f_u = fitness(
+            self.X,
+            self.y,
+            population_U,
         )
 
-        self.t.set_postfix(
-            {
-                "accuracy": f"{self.accuracy*100:.2f}%",
-                "solution": self.global_best[:16],
-                "fitness": f"{self.global_best_fitness:.4f}",
-            }
-        )
-        self.t.close()
-        return self.accuracy
+        if f_u < self.fitness_x[i]:
+            self.x[i] = U
+            self.fitness_x[i] = f_u
+            self.P[i] = population_U
+            if f_u < self.global_best_fitness:
+                self.global_best = population_U
+                self.global_best_fitness = f_u
+
+    def update_parameter(self):
+        # 每10代更新一次F值矩阵
+        if self.FES % (10 * self.size) == 0:
+            self.update_F_matrix()
