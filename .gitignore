@@ -5,3 +5,4 @@ module/__pycache__/
 test*
 run*
 .idea
+shell*

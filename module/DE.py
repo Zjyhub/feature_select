@@ -1,144 +1,41 @@
-from sklearn.neighbors import KNeighborsClassifier
 from module.utils import *
+from module.Base import Base
 
 
-class DE:
+class DE(Base):
     def __init__(
         self,
         X,
         y,
         size=global_params["size"],
-        alpha=global_params["alpha"],
-        beta=global_params["beta"],
         F=0.5,
         CR=0.5,
         max_FES=global_params["max_FES"],
     ):
-        """
-        初始化DE算法对象
+        super().__init__(X, y, size, F, CR, max_FES, algorithm="DE")
 
-        参数:
-        X: 特征矩阵，形状为 (样本数量, 特征数量)
-        y: 目标类别标签，形状为 (样本数量,)
-        size: 种群大小，默认值为20
-        F: 缩放因子，默认值为0.5
-        CR: 交叉概率，默认值为0.5
-        max_FES: 最大评估次数，默认值为1000
-        """
-        self.X_train, self.y_train = X, y
-        self.size = size
-        self.alpha = alpha
-        self.beta = beta
-        self.F = F
-        self.CR = CR
-        self.max_FES = max_FES
+    # 更新第i个个体
+    def update(self, i):
+        # 选择不同变异策略
+        V = self.F_rand_1(i)
 
-        # self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-        self.dimension = X.shape[1]
-        self.knn = KNeighborsClassifier(n_neighbors=5)
+        # 交叉操作，根据交叉概率CR生成新的个体U
+        U = self.x[i].copy()
+        for j in range(self.dimension):
+            if np.random.rand() < self.CR:
+                U[j] = V[j]
+        population_U = (U > 0.5).astype(int)
 
-    # 初始化种群
-    def init_solution(self):
-        self.population = np.zeros((self.size, self.dimension), dtype=int)
-        self.x = np.zeros((self.size, self.dimension))
-        self.fitness_x = np.zeros(self.size)
-        self.FES = 0
-        self.global_best_fitness = float("inf")
-        self.global_best = np.zeros(self.dimension, dtype=int)
-        self.f_best = []
-        self.t = tqdm(total=self.max_FES, desc="DE", bar_format=bar_format)
-        for i in range(self.size):
-            # 将x[i]初始化为0-1之间的随机数
-            self.x[i] = np.random.rand(self.dimension)
-            # 根据x[i]每个特征的值是否大于0.5来初始化种群
-            self.population[i] = (self.x[i] > 0.5).astype(int)
-            f_new = fitness(
-                self.alpha,
-                self.beta,
-                self.dimension,
-                self.X_train,
-                self.y_train,
-                self.population[i],
-                self.knn,
-            )
-            self.fitness_x[i] = f_new
-            if f_new < self.global_best_fitness:
-                self.global_best = self.population[i]
-                self.global_best_fitness = f_new
-
-    # 变异策略
-    # DE/rand/1
-    def F_rand_1(self, i):
-        # 从种群中随机选择三个不同的个体
-        x_set = set()
-        x_set.add(i)
-        r = np.zeros(3, dtype=int)
-        for j in range(3):
-            r[j] = np.random.choice(self.size, 1)[0]
-            while r[j] in x_set:
-                r[j] = np.random.choice(self.size, 1)[0]
-            x_set.add(r[j])
-
-        V = self.x[r[0]] + self.F * (self.x[r[1]] - self.x[r[2]])
-        V = np.clip(V, 0, 1)
-        return V
-
-    # 更新种群
-    def update(self):
-        while self.FES < self.max_FES:
-            self.t.set_postfix(
-                {
-                    "solution": self.global_best[:16],
-                    "fitness": f"{self.global_best_fitness:.4f}",
-                }
-            )
-            for i in tqdm(range(self.size), desc="种群进化中", leave=False):
-                # 选择不同变异策略
-                V = self.F_rand_1(i)
-
-                # 交叉操作，根据交叉概率CR生成新的个体U
-                U = self.x[i].copy()
-                for j in range(self.dimension):
-                    if np.random.rand() < self.CR:
-                        U[j] = V[j]
-                population_U = (U > 0.5).astype(int)
-
-                # 选择操作，选择适应度函数值更小的个体
-                f_u = fitness(
-                    self.alpha,
-                    self.beta,
-                    self.dimension,
-                    self.X_train,
-                    self.y_train,
-                    population_U,
-                    self.knn,
-                )
-                if f_u < self.fitness_x[i]:
-                    self.x[i] = U
-                    self.fitness_x[i] = f_u
-                    self.population[i] = population_U
-                    if f_u < self.global_best_fitness:
-                        self.global_best = population_U
-                        self.global_best_fitness = f_u
-                self.FES += 1
-                self.t.update(1)
-                self.f_best.append(self.global_best_fitness)
-                if self.FES >= self.max_FES:
-                    return
-
-    def fit(self):
-        self.init_solution()
-        self.update()
-        # 计算准确率
-        self.accuracy = cal_accuracy(
-            self.X_train, self.y_train, self.global_best, self.knn
+        # 选择操作，选择适应度函数值更小的个体
+        f_u = fitness(
+            self.X,
+            self.y,
+            population_U,
         )
-        self.t.set_postfix(
-            {
-                "accuracy": f"{self.accuracy*100:.2f}%",
-                "solution": self.global_best[:16],
-                "fitness": f"{self.global_best_fitness:.4f}",
-            }
-        )
-        self.t.close()
-        return self.accuracy
+        if f_u < self.fitness_x[i]:
+            self.x[i] = U
+            self.fitness_x[i] = f_u
+            self.P[i] = population_U
+            if f_u < self.global_best_fitness:
+                self.global_best = population_U
+                self.global_best_fitness = f_u

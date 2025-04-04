@@ -2,7 +2,6 @@ from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVR
 from module.utils import *
 import numpy as np
@@ -30,21 +29,7 @@ class DE_model:
 
         # self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)
         self.dimension = X.shape[1]
-        self.population = np.zeros((self.size, self.dimension)).astype(int)
-        self.x = np.zeros((self.size, self.dimension))
-        self.fitness_x = np.zeros(self.size)
-        self.FES = 0
-        self.global_best_fitness = float("inf")
-        self.global_best = np.zeros(self.dimension).astype(int)
-        self.f_best = []
-        self.knn = KNeighborsClassifier(n_neighbors=5)
-        self.history_X = []  # 明确初始化历史记录
-        self.history_f = []
-        self.light_model = LinearRegression()
-        kernel = C(1.0, (1e-3, 1e3)) * RBF(1.0, (1e-2, 1e2))
-        self.precise_model = GaussianProcessRegressor(kernel=kernel, alpha=1e-2)
-        self.generation = 0
-        self.eval_budget = max_FES
+        self.knn = global_params["knn"]
 
     def init_solution(self):
         self.population = np.zeros((self.size, self.dimension), dtype=int)
@@ -53,7 +38,14 @@ class DE_model:
         self.FES = 0
         self.global_best_fitness = float("inf")
         self.global_best = np.zeros(self.dimension, dtype=int)
-        self.f_best = []
+        self.f_best = np.zeros(self.max_FES)
+        self.history_X = []  # 明确初始化历史记录
+        self.history_f = []
+        self.light_model = LinearRegression()
+        kernel = C(1.0, (1e-3, 1e3)) * RBF(1.0, (1e-2, 1e2))
+        self.precise_model = GaussianProcessRegressor(kernel=kernel, alpha=1e-2)
+        self.generation = 0
+        self.eval_budget = self.max_FES
         self.t = tqdm(total=self.max_FES, desc="DE_model", bar_format=bar_format)
         for i in range(self.size):
             # 将x[i]初始化为0-1之间的随机数
@@ -181,8 +173,7 @@ class DE_model:
                         self.global_best = candidate
                         self.global_best_fitness = f_u
 
-                self.f_best.append(self.global_best_fitness)
-
+                self.f_best[self.FES] = self.global_best_fitness
             # ====== 模型更新 ======
             self.generation += 1
             if self.generation % 2 == 0:

@@ -80,15 +80,17 @@ class FeatureSelect:
         model = self.choose_algorithm(algorithm_name)  # 根据算法名称选择对应的算法
 
         # 初始化结果列表
-        accuracy_list = []
-        solution_list = []
-        f_list = []
+        accuracy_list = np.zeros(run_times)
+        solution_list = np.zeros((run_times, self.X.shape[1]))
+        feature_num = np.zeros(run_times)
+        f_list = np.zeros((run_times, model.max_FES))
 
         print(f"{algorithm_name} 对{self.Dataset}数据集的特征选择，开始运行...")
         for i in range(run_times):
-            accuracy_list.append(model.fit())
-            solution_list.append(model.global_best)
-            f_list.append(model.f_best)
+            accuracy_list[i] = model.fit()
+            solution_list[i] = model.global_best
+            f_list[i] = model.f_best
+            feature_num[i] = np.sum(model.global_best)
 
         # 根据accuracy_list计算平均准确率，并找到最优解
         accuracy_mean = np.mean(accuracy_list)
@@ -97,7 +99,7 @@ class FeatureSelect:
         best_accuracy = accuracy_list[best_index]
 
         print(
-            f"{algorithm_name} run {run_times} times , mean accuracy : {accuracy_mean*100:.2f}%, best solution: {best_solution}, best accuracy : {best_accuracy*100:.2f}%"
+            f"{algorithm_name} run {run_times} times , mean accuracy : {accuracy_mean*100:.2f}%, best solution: {best_solution.astype(int)}, best accuracy : {best_accuracy*100:.2f}%, feature num : {feature_num[best_index].astype(int)}/{self.X.shape[1]}"
         )
         print(f"{algorithm_name} 对{self.Dataset}数据集的特征选择，运行结束...\n")
 
@@ -115,7 +117,7 @@ class FeatureSelect:
         if is_plot:
             save_figure(algorithm_name, f_list, run_times, self.Dataset)
 
-        return accuracy_mean, best_solution, best_accuracy, f_list
+        return accuracy_mean, f_list, np.mean(feature_num)
 
     def compare(
         self,
@@ -123,24 +125,26 @@ class FeatureSelect:
         run_times=1,  # 运行次数
     ):
         accuracy_list = []
+        feature_num_list = []
 
         for i in range(len(algorithm_list)):
-            mean_accuracy, _, _, f_list = self.fit(
-                algorithm_list[i], run_times,True,False
+            mean_accuracy, f_list, features = self.fit(
+                algorithm_list[i], run_times, True, False
             )
+            feature_num_list.append(features)
             accuracy_list.append(mean_accuracy)
             median = np.median(f_list, axis=0)
             sample_interval = 20
             median = median[::sample_interval]
-            plt.plot(median, label=algorithm_list[i],marker='o')
+            plt.plot(median, label=algorithm_list[i], marker="o")
 
         # 根据accuracy_list平均准确率，并找到最优解
-        sorted_index = np.argsort(accuracy_list)[::-1]
-        print(f"\n对{self.Dataset}数据集的特征选择，按平均准确率降序排序,比较结果如下:")
-        for i in range(len(algorithm_list)):
-            print(
-                f"{algorithm_list[sorted_index[i]]}: {accuracy_list[sorted_index[i]]*100:.2f}%"
-            )
+        # sorted_index = np.argsort(accuracy_list)[::-1]
+        # print(f"\n对{self.Dataset}数据集的特征选择，按平均准确率降序排序,比较结果如下:")
+        # for i in range(len(algorithm_list)):
+        #     print(
+        #         f"{algorithm_list[sorted_index[i]]}: {accuracy_list[sorted_index[i]]*100:.2f}%"
+        #     )
 
         plt.title(f"{self.Dataset} Comparison")
         plt.legend()
@@ -148,4 +152,7 @@ class FeatureSelect:
         plt.ylabel("fitness")
         plt.savefig(f"./output/{self.Dataset}_Comparison.png")
 
-        return accuracy_list
+        # 清理画布
+        plt.cla()
+
+        return accuracy_list, feature_num_list

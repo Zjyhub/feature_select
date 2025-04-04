@@ -1,4 +1,3 @@
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.feature_selection import mutual_info_classif
 from module.utils import *
 import numpy as np
@@ -24,15 +23,16 @@ class DE_DynamicF:
 
         # self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=42)
         self.dimension = X.shape[1]
+        self.knn = global_params["knn"]
+
+    def init_solution(self):
         self.population = np.zeros((self.size, self.dimension), dtype=int)
         self.x = np.zeros((self.size, self.dimension))
         self.fitness_x = np.zeros(self.size)
         self.FES = 0
         self.global_best_fitness = float("inf")
         self.global_best = np.zeros(self.dimension, dtype=int)
-        self.f_best = []
-        self.knn = KNeighborsClassifier(n_neighbors=5)
-
+        self.f_best = np.zeros(self.max_FES)
         # 新增特征权重计算
         self.feature_weights = mutual_info_classif(self.X_train, self.y_train)
         # 归一化处理
@@ -43,25 +43,6 @@ class DE_DynamicF:
         # 初始化动态F值矩阵
         self.F_matrix = np.zeros((self.size, self.dimension))
         self.update_F_matrix()
-
-    def update_F_matrix(self):
-        """根据特征权重动态更新F值矩阵"""
-        for d in range(self.dimension):
-            if self.feature_weights[d] > 0.7:
-                self.F_matrix[:, d] = 0.5
-            elif 0.3 <= self.feature_weights[d] <= 0.7:
-                self.F_matrix[:, d] = 1.2
-            else:
-                self.F_matrix[:, d] = 0.0
-
-    def init_solution(self):
-        self.population = np.zeros((self.size, self.dimension), dtype=int)
-        self.x = np.zeros((self.size, self.dimension))
-        self.fitness_x = np.zeros(self.size)
-        self.FES = 0
-        self.global_best_fitness = float("inf")
-        self.global_best = np.zeros(self.dimension, dtype=int)
-        self.f_best = []
         self.t = tqdm(total=self.max_FES, desc="DE_DynamicF", bar_format=bar_format)
 
         for i in range(self.size):
@@ -80,6 +61,16 @@ class DE_DynamicF:
             if f_new < self.global_best_fitness:
                 self.global_best = self.population[i]
                 self.global_best_fitness = f_new
+
+    def update_F_matrix(self):
+        """根据特征权重动态更新F值矩阵"""
+        for d in range(self.dimension):
+            if self.feature_weights[d] > 0.7:
+                self.F_matrix[:, d] = 0.5
+            elif 0.3 <= self.feature_weights[d] <= 0.7:
+                self.F_matrix[:, d] = 1.2
+            else:
+                self.F_matrix[:, d] = 0.0
 
     def similarity_selection(self, current_index):
         """相似性导向的基向量选择"""
@@ -112,7 +103,7 @@ class DE_DynamicF:
         )
 
         # 应用动态F值
-        delta = self.F_matrix[i] * (self.x[r1] - self.x[r2])
+        delta = self.F_matrix[i] * (self.global_best - self.x[r2])
         V = x_base + delta
         return np.clip(V, 0, 1)
 
@@ -160,10 +151,10 @@ class DE_DynamicF:
                         self.global_best = population_U
                         self.global_best_fitness = f_u
 
+                self.f_best[self.FES] = self.global_best_fitness
                 self.FES += 1
                 self.t.update(1)
                 # 记录中间出现的fitness值
-                self.f_best.append(self.global_best_fitness)
                 if self.FES >= self.max_FES:
                     return
 
