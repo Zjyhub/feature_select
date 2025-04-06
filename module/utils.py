@@ -18,14 +18,12 @@ bar_format = "{desc}: {n}/{total} {elapsed} [{remaining},{rate_fmt}] {postfix} {
 
 # 设置全局参数
 global_params = {
-    "size": 25,
+    "size": 20,
     "min_size": 10,
     "alpha": 0.99,
     "beta": 0.01,
     "max_FES": 1000,
     "knn": KNeighborsClassifier(n_neighbors=5, algorithm="auto"),
-    "alpha": 0.99,
-    "beta": 0.01,
 }
 
 

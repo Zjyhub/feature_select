@@ -1,11 +1,10 @@
-"""
+'''
 Description: 
 Author: Zjy
 Date: 2025-03-20 20:39:58
-LastEditTime: 2025-04-04 19:00:10
+LastEditTime: 2025-04-05 14:09:09
 version: 1.0
-"""
-
+'''
 from sklearn.metrics import accuracy_score
 from module.utils import read_uci_data, cal_accuracy
 from module.FeatureSelect import *
@@ -29,7 +28,9 @@ Dataset_list = [
 ]
 
 Alorithm_list = [
-    # "DE",
+    "DE",
+    "DE_DynamicF",
+    "DE_RL_DynamicF",
     # "BPSO",
     # "DE_JADE",
     # "DE_SHADE",
@@ -37,7 +38,6 @@ Alorithm_list = [
     # "DE_RL",
     # "DE_RL_LSHADE",
     # "DE_best_2",
-    "DE_DynamicF",
     # "DE_DynamicF_2",
     # "DE_model",
     # "BPSO_OBL",
@@ -75,11 +75,11 @@ def save_table():
 
 
 if __name__ == "__main__":
-    d_index = 2  # 选择数据集
-    a_index = 0  # 选择算法
+    d_index = 1  # 选择数据集
+    a_index = 2  # 选择算法
     X, y = read_uci_data(Dataset_list[d_index][0], Dataset_list[d_index][1])
     fs = FeatureSelect(X, y, Dataset_list[d_index][2])
     fs.fit(Alorithm_list[a_index], run_times=1)
-    fs.compare(algorithm_list=Alorithm_list, run_times=1)
+    # fs.compare(algorithm_list=Alorithm_list, run_times=20)
 
     # save_table()

@@ -11,6 +11,7 @@ from module.DE_model import *
 from module.DE_DynamicF_2 import *
 from module.DE_RL import *
 from module.DE_best_2 import *
+from module.DE_RL_DynamicF import *
 from matplotlib import pyplot as plt
 
 
@@ -27,6 +28,7 @@ algorithms = [
     "DE_DynamicF_2",
     "DE_RL",
     "DE_best_2",
+    "DE_RL_DynamicF",
 ]
 
 
@@ -59,6 +61,7 @@ class FeatureSelect:
             "DE_DynamicF_2": DE_DynamicF_2(self.X, self.y),
             "DE_RL": DE_RL(self.X, self.y),
             "DE_best_2": DE_best_2(self.X, self.y),
+            "DE_RL_DynamicF": DE_RL_DynamicF(self.X, self.y),
         }
 
     def choose_algorithm(self, algorithm_name):
@@ -98,8 +101,10 @@ class FeatureSelect:
         best_solution = solution_list[best_index]
         best_accuracy = accuracy_list[best_index]
 
+        feature_mean = np.mean(feature_num)
+
         print(
-            f"{algorithm_name} run {run_times} times , mean accuracy : {accuracy_mean*100:.2f}%, best solution: {best_solution.astype(int)}, best accuracy : {best_accuracy*100:.2f}%, feature num : {feature_num[best_index].astype(int)}/{self.X.shape[1]}"
+            f"{algorithm_name} run {run_times} times , mean accuracy : {accuracy_mean*100:.2f}%, best solution: {best_solution.astype(int)}, best accuracy : {best_accuracy*100:.2f}%, feature num : {feature_mean}/{self.X.shape[1]}"
         )
         print(f"{algorithm_name} 对{self.Dataset}数据集的特征选择，运行结束...\n")
 
@@ -117,7 +122,7 @@ class FeatureSelect:
         if is_plot:
             save_figure(algorithm_name, f_list, run_times, self.Dataset)
 
-        return accuracy_mean, f_list, np.mean(feature_num)
+        return accuracy_mean, f_list, feature_mean
 
     def compare(
         self,
@@ -139,12 +144,12 @@ class FeatureSelect:
             plt.plot(median, label=algorithm_list[i], marker="o")
 
         # 根据accuracy_list平均准确率，并找到最优解
-        # sorted_index = np.argsort(accuracy_list)[::-1]
-        # print(f"\n对{self.Dataset}数据集的特征选择，按平均准确率降序排序,比较结果如下:")
-        # for i in range(len(algorithm_list)):
-        #     print(
-        #         f"{algorithm_list[sorted_index[i]]}: {accuracy_list[sorted_index[i]]*100:.2f}%"
-        #     )
+        sorted_index = np.argsort(accuracy_list)[::-1]
+        print(f"\n对{self.Dataset}数据集的特征选择，按平均准确率降序排序,比较结果如下:")
+        for i in range(len(algorithm_list)):
+            print(
+                f"{algorithm_list[sorted_index[i]]}: {accuracy_list[sorted_index[i]]*100:.2f}%"
+            )
 
         plt.title(f"{self.Dataset} Comparison")
         plt.legend()
