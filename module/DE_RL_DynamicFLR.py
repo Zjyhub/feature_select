@@ -80,7 +80,7 @@ class DE_RL_DynamicFLR(Base):
         if isbetter:
             reward = 1
         else:
-            reward = 0
+            reward = -1
         self.Q_table[i][self.State[i], choice] = self.Q_table[i][
             self.State[i], choice
         ] + self.lr * (
