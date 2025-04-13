@@ -27,12 +27,10 @@ class DE_DynamicF(Base):
         """根据特征权重动态更新F值矩阵"""
         for d in range(self.dimension):
             self.F_matrix[:, d] = np.random.normal(
-                    self.feature_weights[d], 0.2, self.size
-                )
+                self.feature_weights[d], 0.2, self.size
+            )
             # 将F值限制在0到2之间
             self.F_matrix[:, d] = np.clip(self.F_matrix[:, d], 0, 2)
-
-
 
     def F_rand_1(self, i):
         # 从种群中随机选择三个不同的个体

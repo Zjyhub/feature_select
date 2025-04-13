@@ -12,6 +12,7 @@ from module.DE_DynamicF_2 import *
 from module.DE_RL import *
 from module.DE_best_2 import *
 from module.DE_RL_DynamicF import *
+from module.DE_RL_DynamicFLR import *
 from matplotlib import pyplot as plt
 
 
@@ -29,6 +30,7 @@ algorithms = [
     "DE_RL",
     "DE_best_2",
     "DE_RL_DynamicF",
+    "DE_RL_DynamicFLR",
 ]
 
 
@@ -62,6 +64,7 @@ class FeatureSelect:
             "DE_RL": DE_RL(self.X, self.y),
             "DE_best_2": DE_best_2(self.X, self.y),
             "DE_RL_DynamicF": DE_RL_DynamicF(self.X, self.y),
+            "DE_RL_DynamicFLR": DE_RL_DynamicFLR(self.X, self.y),
         }
 
     def choose_algorithm(self, algorithm_name):

@@ -2,7 +2,7 @@
 Description: 
 Author: Zjy
 Date: 2025-03-20 20:39:58
-LastEditTime: 2025-04-05 14:09:09
+LastEditTime: 2025-04-13 19:20:35
 version: 1.0
 '''
 from sklearn.metrics import accuracy_score
@@ -28,9 +28,10 @@ Dataset_list = [
 ]
 
 Alorithm_list = [
-    "DE",
-    "DE_DynamicF",
-    "DE_RL_DynamicF",
+    # "DE",
+    # "DE_DynamicF",
+    # "DE_RL_DynamicF",
+    "DE_RL_DynamicFLR",
     # "BPSO",
     # "DE_JADE",
     # "DE_SHADE",
@@ -68,15 +69,15 @@ def save_table():
     col_index = Alorithm_list.copy()
     col_index.insert(0, "Full")
     df = pd.DataFrame(dataset_accuracy, columns=col_index, index=row_index)
-    df.to_excel("./output/accuracy_table.xlsx")
+    df.to_excel("./output/accuracy_table3.xlsx")
 
     df = pd.DataFrame(dataset_feature_num, columns=col_index, index=row_index)
-    df.to_excel("./output/feature_num_table.xlsx")
+    df.to_excel("./output/feature_num_table3.xlsx")
 
 
 if __name__ == "__main__":
     d_index = 1  # 选择数据集
-    a_index = 2  # 选择算法
+    a_index = 0  # 选择算法
     X, y = read_uci_data(Dataset_list[d_index][0], Dataset_list[d_index][1])
     fs = FeatureSelect(X, y, Dataset_list[d_index][2])
     fs.fit(Alorithm_list[a_index], run_times=1)

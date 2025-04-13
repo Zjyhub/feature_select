@@ -3,26 +3,29 @@ from module.Base import Base
 from sklearn.feature_selection import mutual_info_classif
 
 
-class DE_RL_DynamicF(Base):
+class DE_RL_DynamicFLR(Base):
     def __init__(
         self,
         X,
         y,
         gamma=0.9,
-        alpha_lr=0.1,
+        lr_init=0.1,
+        lr_final=0.01,
     ):
         """
         初始化DE算法对象
 
         参数:
         gamma: 折扣因子，默认值为0.9
-        alpha_lr: 学习率，默认值为0.1
+        lr_init: 初始学习率，默认值为0.1
+        lr_final: 最终学习率，默认值为0.01
         state_num: 状态数，0表示当前个体优于之前的父代，1表示当前个体劣于之前的父代
         strategies: 策略数
         """
-        super().__init__(X, y, algorithm="DE_RL_DynamicF")
+        super().__init__(X, y, algorithm="DE_RL_DynamicFLR")
         self.gamma = gamma
-        self.alpha_lr = alpha_lr
+        self.lr_init = lr_init
+        self.lr_final = lr_final
         self.state_num = 2
         self.strategies = 6
 
@@ -30,10 +33,15 @@ class DE_RL_DynamicF(Base):
     def init_solution(self):
         """
         参数:
+        lr: 学习率，动态变化的学习率
+        feature_weights: 特征权重，使用互信息计算特征重要性
         State: 记录每个个体的状态，0表示当前个体优于之前的父代，1表示当前个体劣于之前的父代
         Q_table: Q表, 形状为 (种群大小, 状态数, 策略数)，用于存储每个个体在不同状态下选择不同策略的Q值
         """
         super().init_solution()
+        self.lr = (self.lr_init + self.lr_final) / 2 - (
+            self.lr_init - self.lr_final
+        ) / 2 * np.cos(np.pi * (1 - self.FES / (self.max_FES)))
         self.State = np.zeros(self.size, dtype=int)
         self.Q_table = np.zeros((self.size, self.state_num, self.strategies))
         # 新增特征权重计算
@@ -75,7 +83,7 @@ class DE_RL_DynamicF(Base):
             reward = 0
         self.Q_table[i][self.State[i], choice] = self.Q_table[i][
             self.State[i], choice
-        ] + self.alpha_lr * (
+        ] + self.lr * (
             reward
             + self.gamma * np.max(self.Q_table[i][1 - self.State[i]])
             - self.Q_table[i][self.State[i], choice]
@@ -230,6 +238,11 @@ class DE_RL_DynamicF(Base):
             self.y,
             population_U,
         )
+
+        # 更新学习率
+        self.lr = (self.lr_init + self.lr_final) / 2 - (
+            self.lr_init - self.lr_final
+        ) / 2 * np.cos(np.pi * (1 - self.FES / (self.max_FES)))
 
         if f_u < self.fitness_x[i]:
             self.x[i] = U
