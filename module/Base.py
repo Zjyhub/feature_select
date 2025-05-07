@@ -190,6 +190,18 @@ class Base:
         V = np.clip(V, 0, 1)
         return V
 
+    def levy_flight(self,beta=1.5):
+        """
+        使用Levy飞行生成新的个体
+        """
+        # 计算Levy飞行参数
+        
+        sigma= (math.gamma(1 + beta) * np.sin(np.pi * beta / 2) / (math.gamma((1 + beta) / 2) * beta * 2 ** ((beta - 1) / 2))) ** (1 / beta)
+        u=np.random.normal(0, sigma, self.dimension)
+        v=np.random.normal(0, 1, self.dimension)
+        step=np.divide(u, np.abs(v)**(1/beta))
+        return step
+
     # 训练
     def train(self):
         while self.FES < self.max_FES:

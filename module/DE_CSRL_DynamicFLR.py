@@ -3,7 +3,7 @@ from module.Base import Base
 from sklearn.feature_selection import mutual_info_classif
 
 
-class DE_RL_DynamicFLR(Base):
+class DE_CSRL_DynamicFLR(Base):
     def __init__(
         self,
         X,
@@ -89,6 +89,7 @@ class DE_RL_DynamicFLR(Base):
             - self.Q_table[i][self.State[i], choice]
         )
 
+    # DE/rand/1
     def F_rand_1(self, i):
         # 从种群中随机选择三个不同的个体
         x_set = set()
@@ -104,25 +105,6 @@ class DE_RL_DynamicFLR(Base):
         V = np.clip(V, 0, 1)
         return V
 
-    # DE/rand/2
-    def F_rand_2(self, i):
-        # 从种群中随机选择五个不同
-        x_set = set()
-        x_set.add(i)
-        r = np.zeros(5, dtype=int)
-        for j in range(5):
-            r[j] = np.random.choice(self.size, 1)[0]
-            while r[j] in x_set:
-                r[j] = np.random.choice(self.size, 1)[0]
-            x_set.add(r[j])
-
-        V = (
-            self.x[r[0]]
-            + self.F_matrix[i] * (self.x[r[1]] - self.x[r[2]])
-            + self.F_matrix[i] * (self.x[r[3]] - self.x[r[4]])
-        )
-        V = np.clip(V, 0, 1)
-        return V
 
     # DE/best/1
     def F_best_1(self, i):
@@ -140,48 +122,6 @@ class DE_RL_DynamicFLR(Base):
             x_set.add(r[j])
 
         V = self.x[best] + self.F_matrix[i] * (self.x[r[0]] - self.x[r[1]])
-        V = np.clip(V, 0, 1)
-        return V
-
-    # DE/best/2
-    def F_best_2(self, i):
-        # 选择四个不同的个体和全局最优个体
-        best = np.argmin(self.fitness_x)
-        x_set = set()
-        x_set.add(i)
-        x_set.add(best)
-        r = np.zeros(4, dtype=int)
-        for j in range(4):
-            r[j] = np.random.choice(self.size, 1)[0]
-            while r[j] in x_set:
-                r[j] = np.random.choice(self.size, 1)[0]
-            x_set.add(r[j])
-
-        V = (
-            self.x[best]
-            + self.F_matrix[i] * (self.x[r[0]] - self.x[r[1]])
-            + self.F_matrix[i] * (self.x[r[2]] - self.x[r[3]])
-        )
-        V = np.clip(V, 0, 1)
-        return V
-
-    # DE/current-to-rand/1
-    def F_current_to_rand_1(self, i):
-        # 选择三个不同的个体
-        x_set = set()
-        x_set.add(i)
-        r = np.zeros(3, dtype=int)
-        for j in range(3):
-            r[j] = np.random.choice(self.size, 1)[0]
-            while r[j] in x_set:
-                r[j] = np.random.choice(self.size, 1)[0]
-            x_set.add(r[j])
-
-        V = (
-            self.x[i]
-            + self.F_matrix[i] * (self.x[i] - self.x[r[0]])
-            + self.F_matrix[i] * (self.x[r[1]] - self.x[r[2]])
-        )
         V = np.clip(V, 0, 1)
         return V
 
@@ -206,15 +146,20 @@ class DE_RL_DynamicFLR(Base):
         V = np.clip(V, 0, 1)
         return V
 
+
+
+
     # 更新种群
     def update(self, i):
         # 策略选择
         choice = self.strategy_choice(self.State[i])
+
+        self.x[i] = self.x[i] + 1 * self.levy_flight()
         # 变异操作，根据变异策略生成新的个体V
         if choice == 0:
             V = self.F_rand_1(i)
         elif choice == 1:
-             V = self.F_best_1(i)
+            V = self.F_best_1(i)
         elif choice == 2:
             V = self.F_current_to_best_1(i)
         # elif choice == 3:
@@ -225,11 +170,12 @@ class DE_RL_DynamicFLR(Base):
         #     V = self.F_current_to_rand_1(i)
 
         # 交叉操作，根据交叉概率CR生成新的个体U
-        U = self.x[i].copy()
+        U = self.x[i].copy() 
         j_rand = np.random.randint(0, self.dimension)
         for j in range(self.dimension):
             if np.random.rand() < self.CR or j == j_rand:
                 U[j] = V[j]
+        # U = U + 1 * self.levy_flight()
         population_U = (U > 0.5).astype(int)
 
         # 选择操作，选择适应度函数值更小的个体

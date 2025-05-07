@@ -13,6 +13,7 @@ from module.DE_RL import *
 from module.DE_best_2 import *
 from module.DE_RL_DynamicF import *
 from module.DE_RL_DynamicFLR import *
+from module.DE_CSRL_DynamicFLR import *
 from matplotlib import pyplot as plt
 
 
@@ -31,6 +32,7 @@ algorithms = [
     "DE_best_2",
     "DE_RL_DynamicF",
     "DE_RL_DynamicFLR",
+    "DE_CSRL_DynamicFLR",
 ]
 
 
@@ -65,6 +67,7 @@ class FeatureSelect:
             "DE_best_2": DE_best_2(self.X, self.y),
             "DE_RL_DynamicF": DE_RL_DynamicF(self.X, self.y),
             "DE_RL_DynamicFLR": DE_RL_DynamicFLR(self.X, self.y),
+            "DE_CSRL_DynamicFLR": DE_CSRL_DynamicFLR(self.X, self.y),
         }
 
     def choose_algorithm(self, algorithm_name):
@@ -92,11 +95,15 @@ class FeatureSelect:
         f_list = np.zeros((run_times, model.max_FES))
 
         print(f"{algorithm_name} 对{self.Dataset}数据集的特征选择，开始运行...")
+        start=time.time()
         for i in range(run_times):
             accuracy_list[i] = model.fit()
             solution_list[i] = model.global_best
             f_list[i] = model.f_best
             feature_num[i] = np.sum(model.global_best)
+        end=time.time()
+
+        
 
         # 根据accuracy_list计算平均准确率，并找到最优解
         accuracy_mean = np.mean(accuracy_list)
@@ -105,6 +112,12 @@ class FeatureSelect:
         best_accuracy = accuracy_list[best_index]
 
         feature_mean = np.mean(feature_num)
+
+        # 将运行时间，每次运行的准确率和特征数量保存到文件
+        with open(f"./output/{algorithm_name}/{self.Dataset}_result.txt", "a") as f:
+            f.write(
+                f"{algorithm_name} in {self.Dataset} run {run_times} times, time: {end-start:.4f}s, accuracy: {accuracy_list*100}, feature num: {feature_num},  best accuracy: {best_accuracy*100}\n"
+            )
 
         print(
             f"{algorithm_name} run {run_times} times , mean accuracy : {accuracy_mean*100:.2f}%, best solution: {best_solution.astype(int)}, best accuracy : {best_accuracy*100:.2f}%, feature num : {feature_mean}/{self.X.shape[1]}"

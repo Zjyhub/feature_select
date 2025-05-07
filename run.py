@@ -2,7 +2,7 @@
 Description: 
 Author: Zjy
 Date: 2025-03-20 20:39:58
-LastEditTime: 2025-04-13 19:20:35
+LastEditTime: 2025-05-07 12:42:30
 version: 1.0
 '''
 from sklearn.metrics import accuracy_score
@@ -11,18 +11,18 @@ from module.FeatureSelect import *
 
 # 数据集列表,格式为(路径, y_index, 名称)
 Dataset_list = [
-    ("./data/Breast/Breast.data", 0, "Breast"),
-    ("./data/wine/wine.data", 0, "wine"),
-    ("./data/zoo/zoo.data", -1, "zoo"),
-    ("./data/CNAE-9/CNAE-9.data", 0, "CNAE-9"),
-    ("./data/hill-valley/Hill_Valley_without_noise.data", -1, "hill-valley"),
-    ("./data/lung-cancer/lung-cancer.data", 0, "lung-cancer"),
-    ("./data/ionosphere/ionosphere.data", -1, "ionosphere"),
-    ("./data/lymphography/lymphography.data", 0, "lymphography"),
-    ("./data/madelon/madelon.data", 0, "madelon"),
-    ("./data/movement_libras/movement_libras.data", -1, "movement_libras"),
-    ("./data/musk1/clean1.data", -1, "musk1"),
-    ("./data/semeion/semeion.data", -1, "semeion"),
+    # ("./data/Breast/Breast.data", 0, "Breast"),
+    # ("./data/wine/wine.data", 0, "wine"),
+    # ("./data/zoo/zoo.data", -1, "zoo"),
+    # ("./data/CNAE-9/CNAE-9.data", 0, "CNAE-9"),
+    # ("./data/hill-valley/Hill_Valley_without_noise.data", -1, "hill-valley"),
+    # ("./data/lung-cancer/lung-cancer.data", 0, "lung-cancer"),
+    # ("./data/ionosphere/ionosphere.data", -1, "ionosphere"),
+    # ("./data/lymphography/lymphography.data", 0, "lymphography"),
+    # ("./data/madelon/madelon.data", 0, "madelon"),
+    # ("./data/movement_libras/movement_libras.data", -1, "movement_libras"),
+    # ("./data/musk1/clean1.data", -1, "musk1"),
+    # ("./data/semeion/semeion.data", -1, "semeion"),
     ("./data/sonar/sonar.data", -1, "sonar"),
     ("./data/spambase/spambase.data", -1, "spambase"),
 ]
@@ -30,8 +30,9 @@ Dataset_list = [
 Alorithm_list = [
     # "DE",
     # "DE_DynamicF",
-    # "DE_RL_DynamicF",
+    "DE_RL_DynamicF",
     "DE_RL_DynamicFLR",
+    # "DE_CSRL_DynamicFLR",
     # "BPSO",
     # "DE_JADE",
     # "DE_SHADE",
@@ -69,18 +70,18 @@ def save_table():
     col_index = Alorithm_list.copy()
     col_index.insert(0, "Full")
     df = pd.DataFrame(dataset_accuracy, columns=col_index, index=row_index)
-    df.to_excel("./output/accuracy_table3.xlsx")
+    df.to_excel("./output/accuracy_table1.xlsx")
 
     df = pd.DataFrame(dataset_feature_num, columns=col_index, index=row_index)
-    df.to_excel("./output/feature_num_table3.xlsx")
+    df.to_excel("./output/feature_num_table1.xlsx")
 
 
 if __name__ == "__main__":
-    d_index = 1  # 选择数据集
-    a_index = 0  # 选择算法
-    X, y = read_uci_data(Dataset_list[d_index][0], Dataset_list[d_index][1])
-    fs = FeatureSelect(X, y, Dataset_list[d_index][2])
-    fs.fit(Alorithm_list[a_index], run_times=1)
+    # d_index = 5  # 选择数据集
+    # a_index = 0  # 选择算法
+    # X, y = read_uci_data(Dataset_list[d_index][0], Dataset_list[d_index][1])
+    # fs = FeatureSelect(X, y, Dataset_list[d_index][2])
+    # fs.fit(Alorithm_list[a_index], run_times=1)
     # fs.compare(algorithm_list=Alorithm_list, run_times=20)
 
-    # save_table()
+    save_table()

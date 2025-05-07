@@ -24,7 +24,7 @@ class DE_RL_DynamicF(Base):
         self.gamma = gamma
         self.alpha_lr = alpha_lr
         self.state_num = 2
-        self.strategies = 6
+        self.strategies = 3
 
     # 初始化种群
     def init_solution(self):
@@ -72,7 +72,7 @@ class DE_RL_DynamicF(Base):
         if isbetter:
             reward = 1
         else:
-            reward = 0
+            reward = -1
         self.Q_table[i][self.State[i], choice] = self.Q_table[i][
             self.State[i], choice
         ] + self.alpha_lr * (
@@ -206,15 +206,15 @@ class DE_RL_DynamicF(Base):
         if choice == 0:
             V = self.F_rand_1(i)
         elif choice == 1:
-            V = self.F_rand_2(i)
-        elif choice == 2:
             V = self.F_best_1(i)
-        elif choice == 3:
-            V = self.F_best_2(i)
-        elif choice == 4:
-            V = self.F_current_to_rand_1(i)
-        elif choice == 5:
+        elif choice == 2:
             V = self.F_current_to_best_1(i)
+        # elif choice == 3:
+        #     V = self.F_best_2(i)
+        # elif choice == 4:
+        #     V = self.F_current_to_rand_1(i)
+        # elif choice == 5:
+        #     V = self.F_rand_2(i)
 
         # 交叉操作，根据交叉概率CR生成新的个体U
         U = self.x[i].copy()
